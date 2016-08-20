@@ -4,6 +4,7 @@ use {
     DEFAULT_SEPARATORS,
     GUARD_DIV,
     MINIMUM_ALPHABET_LENGTH,
+    SEPARATOR_DIV,
 };
 
 pub struct Harsh {
@@ -168,14 +169,7 @@ impl HarshFactory {
         }
 
         let salt = self.salt.unwrap_or_else(|| Vec::new());
-
-        // TODO: burn less ram here, plz
-        let mut separators = separators(&self.separators, &alphabet)?;
-        let mut alphabet = remove_separators(&alphabet, &separators);
-
-        shuffle(&mut separators, &salt);
-        shuffle(&mut alphabet, &salt);
-
+        let (alphabet, separators) = alphabet_and_separators(&self.separators, &alphabet, &salt);
         let (guards, alphabet) = guards(&alphabet, &separators);
 
         Ok(Harsh {
@@ -210,23 +204,34 @@ fn unique_alphabet(alphabet: &Option<Vec<u8>>) -> Result<Vec<u8>> {
     }
 }
 
-fn separators(separators: &Option<Vec<u8>>, alphabet: &[u8]) -> Result<Vec<u8>> {
-    match *separators {
-        None => Ok(DEFAULT_SEPARATORS.iter().cloned().collect()),
-        Some(ref separators) => {
-            separators.iter().map(|&separator| {
-                if alphabet.binary_search(&separator).is_err() {
-                    Err(Error::Separator)
-                } else {
-                    Ok(separator)
-                }
-            }).collect()
+fn alphabet_and_separators(separators: &Option<Vec<u8>>, alphabet: &[u8], salt: &[u8]) -> (Vec<u8>, Vec<u8>) {
+    let separators = match *separators {
+        None => DEFAULT_SEPARATORS,
+        Some(ref separators) => separators,
+    };
+
+    let mut separators: Vec<_> = separators.iter().cloned().filter(|item| alphabet.contains(&item)).collect();
+    let mut alphabet: Vec<_> = alphabet.iter().cloned().filter(|item| !separators.contains(&item)).collect();
+
+    shuffle(&mut separators, salt);
+
+    if separators.is_empty() || (alphabet.len() as f64 / separators.len() as f64) > SEPARATOR_DIV {
+        let length = match (alphabet.len() as f64 / SEPARATOR_DIV).ceil() as usize {
+            1 => 2,
+            n => n,
+        };
+
+        if length > separators.len() {
+            let diff = length - separators.len();
+            separators.extend_from_slice(&alphabet[..diff]);
+            alphabet = alphabet[diff..].to_vec();
+        } else {
+            separators = separators[..length].to_vec();
         }
     }
-}
 
-fn remove_separators(alphabet: &[u8], separators: &[u8]) -> Vec<u8> {
-    alphabet.iter().filter(|c| !separators.contains(c)).cloned().collect()
+    shuffle(&mut alphabet, salt);
+    (alphabet, separators)
 }
 
 fn guards(alphabet: &[u8], separators: &[u8]) -> (Vec<u8>, Vec<u8>) {
@@ -366,71 +371,23 @@ mod tests {
 
     #[test]
     fn alphabet_and_separator_generation() {
-        let default_alphabet = "12345asdfzxcvqwer";
-        let default_separators = "12345";
+        use {DEFAULT_ALPHABET, DEFAULT_SEPARATORS};
 
-        /// Reference implementation from https://github.com/charsyam/hashids_rust/blob/master/src/lib.rs#L138-L180
-        /// All credit to user charsyam on github
-        /// 
-        /// The MIT License (MIT)
+        let (alphabet, separators) = harsh::alphabet_and_separators(&Some(DEFAULT_SEPARATORS.to_vec()), DEFAULT_ALPHABET, b"this is my salt");
 
-        /// Copyright (c) 2015 charsyam
+        assert_eq!("AdG05N6y2rljDQak4xgzn8ZR1oKYLmJpEbVq3OBv9WwXPMe7", alphabet.iter().map(|&u| u as char).collect(): String);
+        assert_eq!("UHuhtcITCsFifS", separators.iter().map(|&u| u as char).collect(): String);
+    }
 
-        /// Permission is hereby granted, free of charge, to any person obtaining a copy
-        /// of this software and associated documentation files (the "Software"), to deal
-        /// in the Software without restriction, including without limitation the rights
-        /// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-        /// copies of the Software, and to permit persons to whom the Software is
-        /// furnished to do so, subject to the following conditions:
+    #[test]
+    fn alphabet_and_separator_generation_with_few_separators() {
+        use {DEFAULT_ALPHABET};
 
-        /// The above copyright notice and this permission notice shall be included in all
-        /// copies or substantial portions of the Software.
+        let separators = b"fu";
+        let (alphabet, separators) = harsh::alphabet_and_separators(&Some(separators.to_vec()), DEFAULT_ALPHABET, b"this is my salt");
 
-        /// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-        /// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-        /// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-        /// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-        /// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-        /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-        /// SOFTWARE.
-        fn reference(separators: &str, alphabet: &str) -> (String, String) {
-            use std::collections::HashMap;
-            
-            let mut check_separator_map = HashMap::new();
-            let mut check_alphabet_map = HashMap::new();
-
-            let mut modified_separators = String::new();
-            let mut modified_alphabet = String::new();
-
-            for c in separators.chars() {
-                check_separator_map.insert(c, 1);
-            }
-
-            for c in alphabet.chars() {
-                check_alphabet_map.insert(c, 1);
-            }
-
-            for c in separators.chars() {
-                if check_alphabet_map.contains_key(&c) {
-                    modified_separators.push(c);
-                }
-            }
-
-            for c in alphabet.chars() {
-                if !check_separator_map.contains_key(&c) {
-                    modified_alphabet.push(c);
-                }
-            }
-
-            (modified_separators, modified_alphabet)
-        }
-
-        let separators = harsh::separators(&Some(default_separators.bytes().collect()), default_alphabet.as_ref()).expect("invalid separators in test");
-        let alphabet = harsh::remove_separators(default_alphabet.as_ref(), &separators);
-        let (ref_separators, ref_alphabet) = reference(default_separators, default_alphabet);
-
-        assert_eq!(ref_separators.bytes().collect(): Vec<_>, separators);
-        assert_eq!(ref_alphabet.bytes().collect(): Vec<_>, alphabet);
+        assert_eq!("4RVQrYM87wKPNSyTBGU1E6FIC9ALtH0ZD2Wxz3vs5OXJ", alphabet.iter().map(|&u| u as char).collect(): String);
+        assert_eq!("ufabcdeghijklmnopq", separators.iter().map(|&u| u as char).collect(): String);        
     }
 
     #[test]
