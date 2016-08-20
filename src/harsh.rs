@@ -4,7 +4,6 @@ use {
     DEFAULT_SEPARATORS,
     GUARD_DIV,
     MINIMUM_ALPHABET_LENGTH,
-    // SEPARATOR_DIV,
 };
 
 pub struct Harsh {
@@ -17,7 +16,6 @@ pub struct Harsh {
 
 impl Harsh {
     pub fn encode(&self, values: &[i64]) -> Option<String> {
-        // TODO: decide if this makes sense vs returning a blank string
         if values.len() == 0 {
             return None;
         }
