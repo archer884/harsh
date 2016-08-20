@@ -1,4 +1,6 @@
 #![feature(question_mark, type_ascription)]
+#![cfg_attr(feature="clippy", feature(plugin))]
+#![cfg_attr(feature="clippy", plugin(clippy))]
 
 mod error;
 mod harsh;

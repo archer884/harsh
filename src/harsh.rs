@@ -87,7 +87,7 @@ impl Harsh {
     }
 
     pub fn decode(&self, value: &str) -> Option<Vec<u64>> {
-        if value.len() == 0 {
+        if value.is_empty() {
             return None;
         }
 
@@ -109,7 +109,7 @@ impl Harsh {
 
             let alphabet_len = alphabet.len();
             shuffle(&mut alphabet, &buffer[..alphabet_len]);
-            unhash(&segment, &alphabet)
+            unhash(segment, &alphabet)
         }).collect())
     }
 
@@ -154,6 +154,7 @@ impl Harsh {
     }
 }
 
+#[derive(Default)]
 pub struct HarshFactory {
     salt: Option<Vec<u8>>,
     alphabet: Option<Vec<u8>>,
@@ -197,7 +198,7 @@ impl HarshFactory {
             return Err(Error::AlphabetLength);
         }
 
-        let salt = self.salt.unwrap_or_else(|| Vec::new());
+        let salt = self.salt.unwrap_or_else(Vec::new);
         let (alphabet, separators) = alphabet_and_separators(&self.separators, &alphabet, &salt);
         let (guards, alphabet) = guards(&alphabet, &separators);
 
@@ -239,8 +240,8 @@ fn alphabet_and_separators(separators: &Option<Vec<u8>>, alphabet: &[u8], salt: 
         Some(ref separators) => separators,
     };
 
-    let mut separators: Vec<_> = separators.iter().cloned().filter(|item| alphabet.contains(&item)).collect();
-    let mut alphabet: Vec<_> = alphabet.iter().cloned().filter(|item| !separators.contains(&item)).collect();
+    let mut separators: Vec<_> = separators.iter().cloned().filter(|item| alphabet.contains(item)).collect();
+    let mut alphabet: Vec<_> = alphabet.iter().cloned().filter(|item| !separators.contains(item)).collect();
 
     shuffle(&mut separators, salt);
 
@@ -287,7 +288,7 @@ fn shuffle(values: &mut [u8], salt: &[u8]) {
     let (mut v, mut p) = (0, 0);
 
     for i in (1..values_length).map(|i| values_length - i) {
-        v = v % salt_length;
+        v %= salt_length;
         
         let n = salt[v] as usize;
         p += n;
