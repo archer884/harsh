@@ -9,7 +9,7 @@ fn main() {
     }
 }
 
-fn encode(values: &[i64]) -> String {
+fn encode(values: &[u64]) -> String {
     let harsh = HarshFactory::new()
         .with_salt("this is my salt")
         .with_hash_length(8)
@@ -19,6 +19,6 @@ fn encode(values: &[i64]) -> String {
     harsh.encode(values).expect("failed to encode")
 }
 
-fn read_values() -> Option<Vec<i64>> {
+fn read_values() -> Option<Vec<u64>> {
     std::env::args().skip(1).map(|n| n.parse().ok()).collect()
 }

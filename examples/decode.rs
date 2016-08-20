@@ -9,7 +9,7 @@ fn main() {
     }
 }
 
-fn decode(value: &str) -> Vec<i64> {
+fn decode(value: &str) -> Vec<u64> {
     let harsh = HarshFactory::new()
         .with_salt("this is my salt")
         .with_hash_length(8)
