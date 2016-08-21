@@ -128,8 +128,8 @@ License
 
 Licensed under either of
 
- * Apache License, Version 2.0, ([LICENSE-APACHE][apc] or http://www.apache.org/licenses/LICENSE-2.0)
- * MIT license ([LICENSE-MIT][mit] or http://opensource.org/licenses/MIT)
+ * Apache License, Version 2.0, ([LICENSE-APACHE][license-url-ap2] or http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT][license-url-mit] or http://opensource.org/licenses/MIT)
 
 at your option.
 
