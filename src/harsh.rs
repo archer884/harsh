@@ -15,11 +15,11 @@ use {
 /// meaning just one can be used pretty much through your system.
 #[derive(Clone, Debug)]
 pub struct Harsh {
-    salt: Vec<u8>,
-    alphabet: Vec<u8>,
-    separators: Vec<u8>,
+    salt: Box<[u8]>,
+    alphabet: Box<[u8]>,
+    separators: Box<[u8]>,
     hash_length: usize,
-    guards: Vec<u8>,
+    guards: Box<[u8]>,
 }
 
 impl Harsh {
@@ -234,11 +234,11 @@ impl HarshFactory {
         let guards = guards(&mut alphabet, &mut separators);
 
         Ok(Harsh {
-            salt: salt,
-            alphabet: alphabet,
-            separators: separators,
+            salt: salt.into_boxed_slice(),
+            alphabet: alphabet.into_boxed_slice(),
+            separators: separators.into_boxed_slice(),
             hash_length: self.hash_length,
-            guards: guards,
+            guards: guards.into_boxed_slice(),
         })
     }
 }
