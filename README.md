@@ -119,7 +119,7 @@ Support
 
 Have a question? Open an issue here, or find the author of the original JavaScript library: 
 
-[@IvanAkimov](http://twitter.com/ivanakimov) or [ivanakimov.com](http://ivanakimov.com)
+> [@IvanAkimov](http://twitter.com/ivanakimov) or [ivanakimov.com](http://ivanakimov.com)
 
 Maybe one of these days I'll get around to fixing my website up. :)
 
