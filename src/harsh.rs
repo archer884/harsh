@@ -8,6 +8,12 @@ use {
     SEPARATOR_DIV,
 };
 
+/// A rustic implementation of Hashids.
+/// 
+/// This should be created by use of the `HarshFactory` struct, which
+/// will be consumed upon initialization. `Harsh` is `Send + Sync`, 
+/// meaning just one can be used pretty much through your system.
+#[derive(Clone, Debug)]
 pub struct Harsh {
     salt: Vec<u8>,
     alphabet: Vec<u8>,
@@ -17,6 +23,7 @@ pub struct Harsh {
 }
 
 impl Harsh {
+    /// Encodes a slice of `u64` values into a single hashid.
     pub fn encode(&self, values: &[u64]) -> Option<String> {
         if values.len() == 0 {
             return None;
@@ -86,6 +93,7 @@ impl Harsh {
         Some(buffer)
     }
 
+    /// Decodes a single hashid into a slice of `u64` values.
     pub fn decode(&self, value: &str) -> Option<Vec<u64>> {
         if value.is_empty() {
             return None;
@@ -113,6 +121,7 @@ impl Harsh {
         }).collect())
     }
 
+    /// Encodes a hex string into a hashid.
     pub fn encode_hex(&self, hex: &str) -> Option<String> {
         let values: Option<Vec<_>> = hex.as_bytes()
             .chunks(12)
@@ -123,6 +132,7 @@ impl Harsh {
         values.and_then(|values| self.encode(&values))
     }
 
+    /// Decodes a hashid into a hex string.
     pub fn decode_hex(&self, value: &str) -> Option<String> {
         use std::fmt::Write;
         
@@ -155,6 +165,9 @@ impl Harsh {
 }
 
 #[derive(Default)]
+/// Factory used to create a new `Harsh` instance.
+///
+/// Note that this factory will be consumed upon initialization.
 pub struct HarshFactory {
     salt: Option<Vec<u8>>,
     alphabet: Option<Vec<u8>>,
@@ -163,6 +176,7 @@ pub struct HarshFactory {
 }
 
 impl HarshFactory {
+    /// Creates a new `HarshFactory` instance.
     pub fn new() -> HarshFactory {
         HarshFactory {
             salt: None,
@@ -172,26 +186,44 @@ impl HarshFactory {
         }
     }
 
+    /// Provides a salt.
+    ///
+    /// Note that this salt will be converted into a `[u8]` before use, meaning 
+    /// that multi-byte utf8 character values should be avoided. 
     pub fn with_salt<T: Into<Vec<u8>>>(mut self, salt: T) -> HarshFactory {
         self.salt = Some(salt.into());
         self
     }
 
+    /// Provides an alphabet.
+    ///
+    /// Note that this alphabet will be converted into a `[u8]` before use, meaning
+    /// that multi-byte utf8 character values should be avoided.
     pub fn with_alphabet<T: Into<Vec<u8>>>(mut self, alphabet: T) -> HarshFactory {
         self.alphabet = Some(alphabet.into());
         self
     }
 
+    /// Provides a set of separators.
+    ///
+    /// Note that these separators will be converted into a `[u8]` before use, 
+    /// meaning that multi-byte utf8 character values should be avoided.
     pub fn with_separators<T: Into<Vec<u8>>>(mut self, separators: T) -> HarshFactory {
         self.separators = Some(separators.into());
         self
     }
 
+    /// Provides a minimum hash length.
+    ///
+    /// Keep in mind that hashes produced may be longer than this length.
     pub fn with_hash_length(mut self, hash_length: usize) -> HarshFactory {
         self.hash_length = hash_length;
         self
     }
 
+    /// Initializes a new `Harsh` based on the `HarshFactory`.
+    ///
+    /// This method will consume the `HarshFactory`.
     pub fn init(self) -> Result<Harsh> {
         let alphabet = unique_alphabet(&self.alphabet)?;
         if alphabet.len() < MINIMUM_ALPHABET_LENGTH {
