@@ -140,5 +140,5 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [travis-url]: https://travis-ci.org/archer884/harsh
 [travis-image]: https://travis-ci.org/archer884/harsh.svg?branch=master
 
-[license-url-mit]: https://github.com/ivanakimov/hashids.js/blob/master/LICENSE
-[license-url-ap2]: https://github.com/
+[license-url-mit]: https://github.com/archer884/harsh/blob/master/LICENSE-MIT
+[license-url-ap2]: https://github.com/archer884/harsh/blob/master/LICENSE-APACHE
