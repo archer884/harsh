@@ -1,6 +1,10 @@
 [package]
 name = "harsh"
 version = "0.1.0"
+description = "Hashids implementation for Rust"
+readme = "README.md"
+repository = "https://github.com/archer884/harsh"
+license = "MIT/APACHE-2.0"
 authors = ["J/A <archer884@gmail.com>"]
 
 [dependencies]
