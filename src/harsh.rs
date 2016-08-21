@@ -164,10 +164,10 @@ impl Harsh {
     }
 }
 
-#[derive(Default)]
 /// Factory used to create a new `Harsh` instance.
 ///
 /// Note that this factory will be consumed upon initialization.
+#[derive(Debug, Default)]
 pub struct HarshFactory {
     salt: Option<Vec<u8>>,
     alphabet: Option<Vec<u8>>,
