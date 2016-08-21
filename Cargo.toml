@@ -6,6 +6,7 @@ readme = "README.md"
 repository = "https://github.com/archer884/harsh"
 license = "MIT/APACHE-2.0"
 authors = ["J/A <archer884@gmail.com>"]
+exclude = [".travis.yml"]
 
 [dependencies]
 clippy = {version = "0.0.85", optional = true}
