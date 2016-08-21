@@ -95,11 +95,21 @@ impl Harsh {
 
     /// Decodes a single hashid into a slice of `u64` values.
     pub fn decode(&self, value: &str) -> Option<Vec<u64>> {
+        let mut value = value.as_bytes().to_vec();
+
+        if let Some(guard_idx) = value.iter().rposition(|u| self.guards.contains(u)) {
+            value.truncate(guard_idx);
+        }
+
+        let value = match value.iter().position(|u| self.guards.contains(u)) {
+            None => &value[..],
+            Some(guard_idx) => &value[(guard_idx + 1)..],
+        };
+
         if value.is_empty() {
             return None;
         }
 
-        let value = self.unpad_value(value).as_bytes();
         let mut alphabet = self.alphabet.clone();
         
         let lottery = value[0];
@@ -128,7 +138,6 @@ impl Harsh {
             .map(|chunk| str::from_utf8(chunk).ok().and_then(|s| u64::from_str_radix(&("1".to_owned() + s), 16).ok()))
             .collect();
 
-        println!("{:?}", values);
         values.and_then(|values| self.encode(&values))
     }
 
@@ -145,21 +154,11 @@ impl Harsh {
                 for n in values {
                     write!(buffer, "{:x}", n).expect("failed to write?!");
                     result.push_str(&buffer[1..]);
+                    buffer.clear();
                 }
 
                 Some(result)
             }
-        }
-    }
-
-    #[inline]
-    fn unpad_value<'a>(&'a self, value: &'a str) -> &'a str {
-        let segments: Vec<_> = value.split(|c| self.guards.contains(&(c as u8))).collect();
-
-        match segments.len() {
-            1 => value,
-            2 | 3 => segments[1],
-            _ => panic!("why the hell would you use three guards?")
         }
     }
 }
@@ -231,8 +230,8 @@ impl HarshFactory {
         }
 
         let salt = self.salt.unwrap_or_else(Vec::new);
-        let (alphabet, separators) = alphabet_and_separators(&self.separators, &alphabet, &salt);
-        let (guards, alphabet) = guards(&alphabet, &separators);
+        let (mut alphabet, mut separators) = alphabet_and_separators(&self.separators, &alphabet, &salt);
+        let guards = guards(&mut alphabet, &mut separators);
 
         Ok(Harsh {
             salt: salt,
@@ -250,17 +249,30 @@ fn create_nhash(values: &[u64]) -> u64 {
 }
 
 fn unique_alphabet(alphabet: &Option<Vec<u8>>) -> Result<Vec<u8>> {
+    use std::collections::HashSet;
+    
     match *alphabet {
-        None => Ok(DEFAULT_ALPHABET.iter().cloned().collect()),
-        Some(ref alphabet) => {
-            let mut alphabet: Vec<_> = alphabet.iter().cloned().collect();
-            alphabet.sort();
-            alphabet.dedup();
+        None => {
+            let mut vec = vec![0; DEFAULT_ALPHABET.len()];
+            vec.clone_from_slice(DEFAULT_ALPHABET);
+            Ok(vec)
+        }
 
-            if alphabet.len() < 16 {
+        Some(ref alphabet) => {
+            let mut reg = HashSet::new();
+            let mut ret = Vec::new();
+
+            for &item in alphabet {
+                if !reg.contains(&item) {
+                    ret.push(item);
+                    reg.insert(item);
+                }
+            }
+
+            if ret.len() < 16 {
                 Err(Error::AlphabetLength)
             } else {
-                Ok(alphabet)
+                Ok(ret)
             }
         }
     }
@@ -296,17 +308,16 @@ fn alphabet_and_separators(separators: &Option<Vec<u8>>, alphabet: &[u8], salt: 
     (alphabet, separators)
 }
 
-fn guards(alphabet: &[u8], separators: &[u8]) -> (Vec<u8>, Vec<u8>) {
-    let guard_count = alphabet.len() / GUARD_DIV;
-    match alphabet.len() {
-        0...2 => (
-            separators[..guard_count].iter().cloned().collect(),
-            alphabet.iter().cloned().collect(),
-        ),
-        _ => (
-            alphabet[..guard_count].iter().cloned().collect(),
-            alphabet[guard_count..].iter().cloned().collect(),
-        )
+fn guards(alphabet: &mut Vec<u8>, separators: &mut Vec<u8>) -> Vec<u8> {
+    let guard_count = (alphabet.len() as f64 / GUARD_DIV).ceil() as usize; 
+    if alphabet.len() < 3 {
+        let guards = separators[..guard_count].to_vec();
+        separators.drain(..guard_count);
+        guards
+    } else {
+        let guards = alphabet[..guard_count].to_vec();
+        alphabet.drain(..guard_count);
+        guards 
     }
 }
 
@@ -544,19 +555,5 @@ mod tests {
         harsh::shuffle(&mut values, salt);
 
         assert_eq!("vdwqfrzcsxae", String::from_utf8_lossy(&values));
-    }
-
-    #[test]
-    fn unpad_value() {
-        let padded_value = "9LGlaHquq06D";
-        let unpadded_value = "laHquq";
-
-        let harsh = HarshFactory::new()
-            .with_salt("this is my salt")
-            .with_hash_length(12)
-            .init()
-            .expect("failed to initialize harsh");
-
-        assert_eq!(unpadded_value, harsh.unpad_value(padded_value));
     }
 }
