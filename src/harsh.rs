@@ -76,7 +76,7 @@ impl Harsh {
         let half_length = alphabet.len() / 2;
         while buffer.len() < self.hash_length {
             {
-                let alphabet_copy = alphabet.clone(); // stupid borrowck -.-
+                let alphabet_copy = alphabet.clone();
                 shuffle(&mut alphabet, &alphabet_copy);
             }
 
