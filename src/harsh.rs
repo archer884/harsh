@@ -189,7 +189,7 @@ impl HarshFactory {
     ///
     /// Note that this salt will be converted into a `[u8]` before use, meaning 
     /// that multi-byte utf8 character values should be avoided. 
-    pub fn with_salt<T: Into<Vec<u8>>>(mut self, salt: T) -> HarshFactory {
+    pub fn salt<T: Into<Vec<u8>>>(mut self, salt: T) -> HarshFactory {
         self.salt = Some(salt.into());
         self
     }
@@ -198,7 +198,7 @@ impl HarshFactory {
     ///
     /// Note that this alphabet will be converted into a `[u8]` before use, meaning
     /// that multi-byte utf8 character values should be avoided.
-    pub fn with_alphabet<T: Into<Vec<u8>>>(mut self, alphabet: T) -> HarshFactory {
+    pub fn alphabet<T: Into<Vec<u8>>>(mut self, alphabet: T) -> HarshFactory {
         self.alphabet = Some(alphabet.into());
         self
     }
@@ -207,7 +207,7 @@ impl HarshFactory {
     ///
     /// Note that these separators will be converted into a `[u8]` before use, 
     /// meaning that multi-byte utf8 character values should be avoided.
-    pub fn with_separators<T: Into<Vec<u8>>>(mut self, separators: T) -> HarshFactory {
+    pub fn separators<T: Into<Vec<u8>>>(mut self, separators: T) -> HarshFactory {
         self.separators = Some(separators.into());
         self
     }
@@ -215,7 +215,7 @@ impl HarshFactory {
     /// Provides a minimum hash length.
     ///
     /// Keep in mind that hashes produced may be longer than this length.
-    pub fn with_hash_length(mut self, hash_length: usize) -> HarshFactory {
+    pub fn length(mut self, hash_length: usize) -> HarshFactory {
         self.hash_length = hash_length;
         self
     }
@@ -371,7 +371,7 @@ mod tests {
     #[test]
     fn can_encode() {
         let harsh = HarshFactory::new()
-            .with_salt("this is my salt")
+            .salt("this is my salt")
             .init()
             .expect("failed to initialize harsh");
 
@@ -382,8 +382,8 @@ mod tests {
     #[test]
     fn can_encode_with_guards() {
         let harsh = HarshFactory::new()
-            .with_salt("this is my salt")
-            .with_hash_length(8)
+            .salt("this is my salt")
+            .length(8)
             .init()
             .expect("failed to initialize harsh");
 
@@ -393,8 +393,8 @@ mod tests {
     #[test]
     fn can_encode_with_padding() {
         let harsh = HarshFactory::new()
-            .with_salt("this is my salt")
-            .with_hash_length(12)
+            .salt("this is my salt")
+            .length(12)
             .init()
             .expect("failed to initialize harsh");
 
@@ -404,7 +404,7 @@ mod tests {
     #[test]
     fn can_decode() {
         let harsh = HarshFactory::new()
-            .with_salt("this is my salt")
+            .salt("this is my salt")
             .init()
             .expect("failed to initialize harsh");
 
@@ -415,8 +415,8 @@ mod tests {
     #[test]
     fn can_decode_with_guards() {
         let harsh = HarshFactory::new()
-            .with_salt("this is my salt")
-            .with_hash_length(8)
+            .salt("this is my salt")
+            .length(8)
             .init()
             .expect("failed to initialize harsh");
 
@@ -426,8 +426,8 @@ mod tests {
     #[test]
     fn can_decode_with_padding() {
         let harsh = HarshFactory::new()
-            .with_salt("this is my salt")
-            .with_hash_length(12)
+            .salt("this is my salt")
+            .length(12)
             .init()
             .expect("failed to initialize harsh");
 
@@ -437,7 +437,7 @@ mod tests {
     #[test]
     fn can_encode_hex() {
         let harsh = HarshFactory::new()
-            .with_salt("this is my salt")
+            .salt("this is my salt")
             .init()
             .expect("failed to initialize harsh");
 
@@ -458,8 +458,8 @@ mod tests {
     #[test]
     fn can_encode_hex_with_guards() {
         let harsh = HarshFactory::new()
-            .with_salt("this is my salt")
-            .with_hash_length(10)
+            .salt("this is my salt")
+            .length(10)
             .init()
             .expect("failed to initialize harsh");
             
@@ -469,8 +469,8 @@ mod tests {
     #[test]
     fn can_encode_hex_with_padding() {
         let harsh = HarshFactory::new()
-            .with_salt("this is my salt")
-            .with_hash_length(12)
+            .salt("this is my salt")
+            .length(12)
             .init()
             .expect("failed to initialize harsh");
             
@@ -480,7 +480,7 @@ mod tests {
     #[test]
     fn can_decode_hex() {
         let harsh = HarshFactory::new()
-            .with_salt("this is my salt")
+            .salt("this is my salt")
             .init()
             .expect("failed to initialize harsh");
 
@@ -501,8 +501,8 @@ mod tests {
     #[test]
     fn can_decode_hex_with_guards() {
         let harsh = HarshFactory::new()
-            .with_salt("this is my salt")
-            .with_hash_length(10)
+            .salt("this is my salt")
+            .length(10)
             .init()
             .expect("failed to initialize harsh");
             
@@ -512,8 +512,8 @@ mod tests {
     #[test]
     fn can_decode_hex_with_padding() {
         let harsh = HarshFactory::new()
-            .with_salt("this is my salt")
-            .with_hash_length(12)
+            .salt("this is my salt")
+            .length(12)
             .init()
             .expect("failed to initialize harsh");
             
@@ -523,7 +523,7 @@ mod tests {
     #[test]
     fn can_encode_with_custom_alphabet() {
         let harsh = HarshFactory::new()
-            .with_alphabet("abcdefghijklmnopqrstuvwxyz")
+            .alphabet("abcdefghijklmnopqrstuvwxyz")
             .init()
             .expect("failed to initialize harsh");
 
@@ -533,7 +533,7 @@ mod tests {
     #[test]
     fn can_decode_with_custom_alphabet() {
         let harsh = HarshFactory::new()
-            .with_alphabet("abcdefghijklmnopqrstuvwxyz")
+            .alphabet("abcdefghijklmnopqrstuvwxyz")
             .init()
             .expect("failed to initialize harsh");
 

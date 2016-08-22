@@ -20,10 +20,10 @@ let numbers = hashids.decode(id).unwrap(); // [1, 2, 3]
 Pass a project name to make your ids unique:
 
 ```rust
-let harsh = HarshFactory::new().with_salt("My Project").init().unwrap();
+let harsh = HarshFactory::new().salt("My Project").init().unwrap();
 let id = harsh.encode(&[1, 2, 3]).unwrap(); // "Z4UrtW"
 
-let harsh = HarshFactory::new().with_salt("My Other Project").init().unwrap();
+let harsh = HarshFactory::new().salt("My Other Project").init().unwrap();
 let id = harsh.encode(&[1, 2, 3]).unwrap(); // "gPUasb"
 ```
 
@@ -35,14 +35,14 @@ Note that ids are only padded to fit **at least** a certain length. It doesn't m
 let harsh = HarshFactory::new().init().unwrap(); // no padding
 let id = harsh.encode(&[1]).unwrap() // "jR"
 
-let harsh = HarshFactory::new().with_hash_length(10).init().unwrap(); // pad to length 10
+let harsh = HarshFactory::new().length(10).init().unwrap(); // pad to length 10
 let id = harsh.encode(&[1]).unwrap() // "VolejRejNm"
 ```
 
 **Pass a custom alphabet:**
 
 ```rust
-let harsh = HarshFactory::new().with_alphabet("abcdefghijklmnopqrstuvwxyz").init().unwrap(); // all lowercase
+let harsh = HarshFactory::new().alphabet("abcdefghijklmnopqrstuvwxyz").init().unwrap(); // all lowercase
 let id = harsh.encode(&[1, 2, 3]).unwrap(); // "mdfphx"
 ```
 
