@@ -94,8 +94,8 @@ impl Harsh {
     }
 
     /// Decodes a single hashid into a slice of `u64` values.
-    pub fn decode(&self, value: &str) -> Option<Vec<u64>> {
-        let mut value = value.as_bytes().to_vec();
+    pub fn decode<T: AsRef<str>>(&self, value: T) -> Option<Vec<u64>> {
+        let mut value = value.as_ref().as_bytes().to_vec();
 
         if let Some(guard_idx) = value.iter().rposition(|u| self.guards.contains(u)) {
             value.truncate(guard_idx);
