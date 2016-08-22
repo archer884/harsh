@@ -269,6 +269,10 @@ fn unique_alphabet(alphabet: &Option<Vec<u8>>) -> Result<Vec<u8>> {
             let mut ret = Vec::new();
 
             for &item in alphabet {
+                if item == b' ' {
+                    return Err(Error::IllegalCharacter(item as char));
+                }
+
                 if !reg.contains(&item) {
                     ret.push(item);
                     reg.insert(item);
