@@ -1,22 +1,29 @@
 use harsh::Harsh;
 
-const TEST_CASES: [(&'static str, &'static str); 8] = [
-	("wpVL4j9g", "deadbeef"),
-	("kmP69lB3xv", "abcdef123456"),
-	("47JWg0kv4VU0G2KBO2", "ABCDDD6666DDEEEEEEEEE"),
-	("y42LW46J9luq3Xq9XMly", "507f1f77bcf86cd799439011"),
-	("m1rO8xBQNquXmLvmO65BUO9KQmj", "f00000fddddddeeeee4444444ababab"),
-	("wBlnMA23NLIQDgw7XxErc2mlNyAjpw", "abcdef123456abcdef123456abcdef123456"),
-	("VwLAoD9BqlT7xn4ZnBXJFmGZ51ZqrBhqrymEyvYLIP199", "f000000000000000000000000000000000000000000000000000f"),
-	("nBrz1rYyV0C0XKNXxB54fWN0yNvVjlip7127Jo3ri0Pqw", "fffffffffffffffffffffffffffffffffffffffffffffffffffff"),
-];
+const TEST_CASES: [(&'static str, &'static str); 8] =
+    [("wpVL4j9g", "deadbeef"),
+     ("kmP69lB3xv", "abcdef123456"),
+     ("47JWg0kv4VU0G2KBO2", "ABCDDD6666DDEEEEEEEEE"),
+     ("y42LW46J9luq3Xq9XMly", "507f1f77bcf86cd799439011"),
+     ("m1rO8xBQNquXmLvmO65BUO9KQmj", "f00000fddddddeeeee4444444ababab"),
+     ("wBlnMA23NLIQDgw7XxErc2mlNyAjpw", "abcdef123456abcdef123456abcdef123456"),
+     ("VwLAoD9BqlT7xn4ZnBXJFmGZ51ZqrBhqrymEyvYLIP199",
+      "f000000000000000000000000000000000000000000000000000f"),
+     ("nBrz1rYyV0C0XKNXxB54fWN0yNvVjlip7127Jo3ri0Pqw",
+      "fffffffffffffffffffffffffffffffffffffffffffffffffffff")];
 
 #[test]
 fn default_params_hex() {
     let harsh = Harsh::default();
-    
+
     for &(hash, value) in &TEST_CASES {
-		assert_eq!(hash, harsh.encode_hex(value).unwrap(), "failed to encode \"{}\"", value);
-		assert_eq!(value.to_lowercase(), harsh.decode_hex(hash).unwrap(), "failed to decode \"{}\"", hash);
+        assert_eq!(hash,
+                   harsh.encode_hex(value).unwrap(),
+                   "failed to encode \"{}\"",
+                   value);
+        assert_eq!(value.to_lowercase(),
+                   harsh.decode_hex(hash).unwrap(),
+                   "failed to decode \"{}\"",
+                   hash);
     }
 }

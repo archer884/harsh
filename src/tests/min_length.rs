@@ -33,6 +33,9 @@ fn test_minimum_length(n: usize) {
     let hash = harsh.encode(NUMBERS).expect("failed to encode values");
     let values = harsh.decode(&hash).expect("failed to decode hash");
 
-    assert_eq!(NUMBERS, &values[..], "encoding/decoding failed at length {}", n);
+    assert_eq!(NUMBERS,
+               &values[..],
+               "encoding/decoding failed at length {}",
+               n);
     assert!(hash.len() >= n, "length too short for {}", n);
 }
