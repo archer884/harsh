@@ -1,6 +1,6 @@
 language: rust
 cache: cargo
-rust: nightly
+rust: stable
 os:
     - linux
     - osx
