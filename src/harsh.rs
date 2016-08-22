@@ -230,7 +230,7 @@ impl HarshFactory {
     ///
     /// This method will consume the `HarshFactory`.
     pub fn init(self) -> Result<Harsh> {
-        let alphabet = unique_alphabet(&self.alphabet)?;
+        let alphabet = try!(unique_alphabet(&self.alphabet));
         if alphabet.len() < MINIMUM_ALPHABET_LENGTH {
             return Err(Error::AlphabetLength);
         }
