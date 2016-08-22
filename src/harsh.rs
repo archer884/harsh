@@ -106,7 +106,7 @@ impl Harsh {
             Some(guard_idx) => &value[(guard_idx + 1)..],
         };
 
-        if value.is_empty() {
+        if value.len() < 2 {
             return None;
         }
 
