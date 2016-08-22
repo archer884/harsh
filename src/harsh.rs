@@ -1,12 +1,11 @@
 use std::str;
 use {Error, Result};
-use {
-    DEFAULT_ALPHABET,
-    DEFAULT_SEPARATORS,
-    GUARD_DIV,
-    MINIMUM_ALPHABET_LENGTH,
-    SEPARATOR_DIV,
-};
+
+const DEFAULT_ALPHABET: &'static [u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+const DEFAULT_SEPARATORS: &'static [u8] = b"cfhistuCFHISTU";
+const SEPARATOR_DIV: f64 = 3.5;
+const GUARD_DIV: f64 = 12.0;
+const MINIMUM_ALPHABET_LENGTH: usize = 16;
 
 /// A rustic implementation of Hashids.
 /// 
@@ -570,7 +569,7 @@ mod tests {
 
     #[test]
     fn alphabet_and_separator_generation() {
-        use {DEFAULT_ALPHABET, DEFAULT_SEPARATORS};
+        use harsh::{DEFAULT_ALPHABET, DEFAULT_SEPARATORS};
 
         let (alphabet, separators) = harsh::alphabet_and_separators(&Some(DEFAULT_SEPARATORS.to_vec()), DEFAULT_ALPHABET, b"this is my salt");
 
@@ -580,7 +579,7 @@ mod tests {
 
     #[test]
     fn alphabet_and_separator_generation_with_few_separators() {
-        use {DEFAULT_ALPHABET};
+        use harsh::{DEFAULT_ALPHABET};
 
         let separators = b"fu";
         let (alphabet, separators) = harsh::alphabet_and_separators(&Some(separators.to_vec()), DEFAULT_ALPHABET, b"this is my salt");
