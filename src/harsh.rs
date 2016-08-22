@@ -574,8 +574,8 @@ mod tests {
 
         let (alphabet, separators) = harsh::alphabet_and_separators(&Some(DEFAULT_SEPARATORS.to_vec()), DEFAULT_ALPHABET, b"this is my salt");
 
-        assert_eq!("AdG05N6y2rljDQak4xgzn8ZR1oKYLmJpEbVq3OBv9WwXPMe7", alphabet.iter().map(|&u| u as char).collect(): String);
-        assert_eq!("UHuhtcITCsFifS", separators.iter().map(|&u| u as char).collect(): String);
+        assert_eq!("AdG05N6y2rljDQak4xgzn8ZR1oKYLmJpEbVq3OBv9WwXPMe7", alphabet.iter().map(|&u| u as char).collect::<String>());
+        assert_eq!("UHuhtcITCsFifS", separators.iter().map(|&u| u as char).collect::<String>());
     }
 
     #[test]
@@ -585,14 +585,14 @@ mod tests {
         let separators = b"fu";
         let (alphabet, separators) = harsh::alphabet_and_separators(&Some(separators.to_vec()), DEFAULT_ALPHABET, b"this is my salt");
 
-        assert_eq!("4RVQrYM87wKPNSyTBGU1E6FIC9ALtH0ZD2Wxz3vs5OXJ", alphabet.iter().map(|&u| u as char).collect(): String);
-        assert_eq!("ufabcdeghijklmnopq", separators.iter().map(|&u| u as char).collect(): String);        
+        assert_eq!("4RVQrYM87wKPNSyTBGU1E6FIC9ALtH0ZD2Wxz3vs5OXJ", alphabet.iter().map(|&u| u as char).collect::<String>());
+        assert_eq!("ufabcdeghijklmnopq", separators.iter().map(|&u| u as char).collect::<String>());        
     }
 
     #[test]
     fn shuffle() {
         let salt = b"1234";
-        let mut values = "asdfzxcvqwer".bytes().collect(): Vec<_>;
+        let mut values = "asdfzxcvqwer".bytes().collect::<Vec<_>>();
         harsh::shuffle(&mut values, salt);
 
         assert_eq!("vdwqfrzcsxae", String::from_utf8_lossy(&values));
