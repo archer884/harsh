@@ -163,6 +163,12 @@ impl Harsh {
     }
 }
 
+impl Default for Harsh {
+    fn default() -> Harsh {
+        HarshFactory::new().init().unwrap()
+    }
+}
+
 /// Factory used to create a new `Harsh` instance.
 ///
 /// Note that this factory will be consumed upon initialization.
@@ -367,6 +373,11 @@ fn unhash(input: &[u8], alphabet: &[u8]) -> u64 {
 #[cfg(test)]
 mod tests {
     use harsh::{self, HarshFactory};
+
+    #[test]
+    fn harsh_default_does_not_panic() {
+        harsh::Harsh::default();
+    }
 
     #[test]
     fn can_encode() {
