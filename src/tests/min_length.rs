@@ -1,4 +1,4 @@
-use harsh::HarshFactory;
+use harsh::HarshBuilder;
 
 const NUMBERS: &'static [u64] = &[1, 2, 3];
 
@@ -28,7 +28,7 @@ fn min_length_1000() {
 }
 
 fn test_minimum_length(n: usize) {
-    let harsh = HarshFactory::new().length(n).init().unwrap();
+    let harsh = HarshBuilder::new().length(n).init().unwrap();
 
     let hash = harsh.encode(NUMBERS).expect("failed to encode values");
     let values = harsh.decode(&hash).expect("failed to decode hash");

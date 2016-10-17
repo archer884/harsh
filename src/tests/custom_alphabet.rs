@@ -1,4 +1,4 @@
-use harsh::HarshFactory;
+use harsh::HarshBuilder;
 
 const NUMBERS: [u64; 3] = [1, 2, 3];
 
@@ -38,7 +38,7 @@ fn weird_alphabet() {
 }
 
 fn test_alphabet(alphabet: &str, message: &str) {
-    let harsh = HarshFactory::new().alphabet(alphabet).init().unwrap();
+    let harsh = HarshBuilder::new().alphabet(alphabet).init().unwrap();
     let encoded = harsh.encode(&NUMBERS).unwrap();
     let decoded = harsh.decode(encoded).unwrap();
 

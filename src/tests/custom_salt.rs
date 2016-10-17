@@ -1,4 +1,4 @@
-use harsh::HarshFactory;
+use harsh::HarshBuilder;
 
 #[test]
 fn empty_salt() {
@@ -28,5 +28,5 @@ fn weird_salt() {
 }
 
 fn test_salt(salt: &str, message: &str) {
-    assert!(HarshFactory::new().salt(salt).init().is_ok(), "{}", message);
+    assert!(HarshBuilder::new().salt(salt).init().is_ok(), "{}", message);
 }
