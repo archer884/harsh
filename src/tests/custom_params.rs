@@ -1,4 +1,4 @@
-use harsh::HarshFactory;
+use harsh::HarshBuilder;
 
 const TEST_CASES: [(&'static str, &'static [u64]); 14] =
     [("nej1m3d5a6yn875e7gr9kbwpqol02q", &[0]),
@@ -21,7 +21,7 @@ const TEST_CASES: [(&'static str, &'static [u64]); 14] =
 
 #[test]
 fn custom_params() {
-    let harsh = HarshFactory::new()
+    let harsh = HarshBuilder::new()
         .salt("this is my salt")
         .length(30)
         .alphabet("xzal86grmb4jhysfoqp3we7291kuct5iv0nd")

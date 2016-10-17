@@ -1,14 +1,14 @@
-use harsh::{Harsh, HarshFactory};
+use harsh::{Harsh, HarshBuilder};
 
 #[test]
 fn small_alphabet() {
-    assert!(!HarshFactory::new().alphabet("1234567890").init().is_ok(),
+    assert!(!HarshBuilder::new().alphabet("1234567890").init().is_ok(),
             "should throw an error with a small alphabet");
 }
 
 #[test]
 fn spaces_in_alphabet() {
-    assert!(!HarshFactory::new().alphabet("a cdefghijklmnopqrstuvwxyz").init().is_ok(),
+    assert!(!HarshBuilder::new().alphabet("a cdefghijklmnopqrstuvwxyz").init().is_ok(),
             "should throw an error when alphabet includes spaces");
 }
 

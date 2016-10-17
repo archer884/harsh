@@ -8,4 +8,4 @@ mod error;
 mod harsh;
 
 pub use error::{Error, Result};
-pub use harsh::{Harsh, HarshFactory};
+pub use harsh::{Harsh, HarshBuilder};

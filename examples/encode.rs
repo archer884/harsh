@@ -1,9 +1,9 @@
 extern crate harsh;
 
-use harsh::HarshFactory;
+use harsh::HarshBuilder;
 
 fn main() {
-    let harsh = HarshFactory::new().init().unwrap();
+    let harsh = HarshBuilder::new().init().unwrap();
     match read_values() {
         None => println!("provide some numeric args, plzkthx"),
         Some(ref values) => println!("{}", harsh.encode(values).unwrap()),

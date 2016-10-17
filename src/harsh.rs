@@ -11,7 +11,7 @@ const MINIMUM_ALPHABET_LENGTH: usize = 16;
 
 /// A rustic implementation of Hashids.
 ///
-/// This should be created by use of the `HarshFactory` struct, which
+/// This should be created by use of the `HarshBuilder` struct, which
 /// will be consumed upon initialization. `Harsh` is `Send + Sync`,
 /// meaning just one can be used pretty much through your system.
 #[derive(Clone, Debug)]
@@ -180,7 +180,7 @@ impl Harsh {
 
 impl Default for Harsh {
     fn default() -> Harsh {
-        HarshFactory::new().init().unwrap()
+        HarshBuilder::new().init().unwrap()
     }
 }
 
@@ -188,17 +188,17 @@ impl Default for Harsh {
 ///
 /// Note that this factory will be consumed upon initialization.
 #[derive(Debug, Default)]
-pub struct HarshFactory {
+pub struct HarshBuilder {
     salt: Option<Vec<u8>>,
     alphabet: Option<Vec<u8>>,
     separators: Option<Vec<u8>>,
     hash_length: usize,
 }
 
-impl HarshFactory {
-    /// Creates a new `HarshFactory` instance.
-    pub fn new() -> HarshFactory {
-        HarshFactory {
+impl HarshBuilder {
+    /// Creates a new `HarshBuilder` instance.
+    pub fn new() -> HarshBuilder {
+        HarshBuilder {
             salt: None,
             alphabet: None,
             separators: None,
@@ -210,7 +210,7 @@ impl HarshFactory {
     ///
     /// Note that this salt will be converted into a `[u8]` before use, meaning
     /// that multi-byte utf8 character values should be avoided.
-    pub fn salt<T: Into<Vec<u8>>>(mut self, salt: T) -> HarshFactory {
+    pub fn salt<T: Into<Vec<u8>>>(mut self, salt: T) -> HarshBuilder {
         self.salt = Some(salt.into());
         self
     }
@@ -219,7 +219,7 @@ impl HarshFactory {
     ///
     /// Note that this alphabet will be converted into a `[u8]` before use, meaning
     /// that multi-byte utf8 character values should be avoided.
-    pub fn alphabet<T: Into<Vec<u8>>>(mut self, alphabet: T) -> HarshFactory {
+    pub fn alphabet<T: Into<Vec<u8>>>(mut self, alphabet: T) -> HarshBuilder {
         self.alphabet = Some(alphabet.into());
         self
     }
@@ -228,7 +228,7 @@ impl HarshFactory {
     ///
     /// Note that these separators will be converted into a `[u8]` before use,
     /// meaning that multi-byte utf8 character values should be avoided.
-    pub fn separators<T: Into<Vec<u8>>>(mut self, separators: T) -> HarshFactory {
+    pub fn separators<T: Into<Vec<u8>>>(mut self, separators: T) -> HarshBuilder {
         self.separators = Some(separators.into());
         self
     }
@@ -236,14 +236,14 @@ impl HarshFactory {
     /// Provides a minimum hash length.
     ///
     /// Keep in mind that hashes produced may be longer than this length.
-    pub fn length(mut self, hash_length: usize) -> HarshFactory {
+    pub fn length(mut self, hash_length: usize) -> HarshBuilder {
         self.hash_length = hash_length;
         self
     }
 
-    /// Initializes a new `Harsh` based on the `HarshFactory`.
+    /// Initializes a new `Harsh` based on the `HarshBuilder`.
     ///
-    /// This method will consume the `HarshFactory`.
+    /// This method will consume the `HarshBuilder`.
     pub fn init(self) -> Result<Harsh> {
         let alphabet = try!(unique_alphabet(&self.alphabet));
         if alphabet.len() < MINIMUM_ALPHABET_LENGTH {
@@ -398,7 +398,7 @@ fn unhash(input: &[u8], alphabet: &[u8]) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use harsh::{self, HarshFactory};
+    use harsh::{self, HarshBuilder};
 
     #[test]
     fn harsh_default_does_not_panic() {
@@ -407,7 +407,7 @@ mod tests {
 
     #[test]
     fn can_encode() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .init()
             .expect("failed to initialize harsh");
@@ -421,7 +421,7 @@ mod tests {
 
     #[test]
     fn can_encode_with_guards() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(8)
             .init()
@@ -433,7 +433,7 @@ mod tests {
 
     #[test]
     fn can_encode_with_padding() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(12)
             .init()
@@ -445,7 +445,7 @@ mod tests {
 
     #[test]
     fn can_decode() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .init()
             .expect("failed to initialize harsh");
@@ -459,7 +459,7 @@ mod tests {
 
     #[test]
     fn can_decode_with_guards() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(8)
             .init()
@@ -471,7 +471,7 @@ mod tests {
 
     #[test]
     fn can_decode_with_padding() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(12)
             .init()
@@ -483,7 +483,7 @@ mod tests {
 
     #[test]
     fn can_encode_hex() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .init()
             .expect("failed to initialize harsh");
@@ -516,7 +516,7 @@ mod tests {
                    &harsh.encode_hex("deadbeef").expect("failed to encode"),
                    "error encoding `deadbeef`");
 
-        let harsh = HarshFactory::new().init().unwrap();
+        let harsh = HarshBuilder::new().init().unwrap();
         assert_eq!("y42LW46J9luq3Xq9XMly",
                    &harsh.encode_hex("507f1f77bcf86cd799439011").expect("failed to encode"),
                    "error encoding `507f1f77bcf86cd799439011`");
@@ -524,7 +524,7 @@ mod tests {
 
     #[test]
     fn can_encode_hex_with_guards() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(10)
             .init()
@@ -536,7 +536,7 @@ mod tests {
 
     #[test]
     fn can_encode_hex_with_padding() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(12)
             .init()
@@ -548,7 +548,7 @@ mod tests {
 
     #[test]
     fn can_decode_hex() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .init()
             .expect("failed to initialize harsh");
@@ -581,7 +581,7 @@ mod tests {
                    harsh.decode_hex("kRNrpKlJ").expect("failed to decode"),
                    "error decoding `deadbeef`");
 
-        let harsh = HarshFactory::new().init().unwrap();
+        let harsh = HarshBuilder::new().init().unwrap();
         assert_eq!("507f1f77bcf86cd799439011",
                    harsh.decode_hex("y42LW46J9luq3Xq9XMly").expect("failed to decode"),
                    "error decoding `y42LW46J9luq3Xq9XMly`");
@@ -589,7 +589,7 @@ mod tests {
 
     #[test]
     fn can_decode_hex_with_guards() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(10)
             .init()
@@ -602,7 +602,7 @@ mod tests {
 
     #[test]
     fn can_decode_hex_with_padding() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(12)
             .init()
@@ -615,7 +615,7 @@ mod tests {
 
     #[test]
     fn can_encode_with_custom_alphabet() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .alphabet("abcdefghijklmnopqrstuvwxyz")
             .init()
             .expect("failed to initialize harsh");
@@ -627,7 +627,7 @@ mod tests {
 
     #[test]
     fn can_decode_with_custom_alphabet() {
-        let harsh = HarshFactory::new()
+        let harsh = HarshBuilder::new()
             .alphabet("abcdefghijklmnopqrstuvwxyz")
             .init()
             .expect("failed to initialize harsh");
