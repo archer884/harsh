@@ -3,7 +3,7 @@
 
 [![Build Status][travis-image]][travis-url]
 
-**Harsh** is Rust implementation of the **Hashids** JavaScript library to generate YouTube-like ids from numbers. Use it when you don't want to expose your database ids to the user: [http://hashids.org/javascript](http://hashids.org/javascript)
+**Harsh** is a Rust implementation of the **Hashids** JavaScript library to generate YouTube-like ids from numbers. Use it when you don't want to expose your database ids to the user: [http://hashids.org/javascript](http://hashids.org/javascript)
 
 Quick example
 -------
