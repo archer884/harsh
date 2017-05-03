@@ -126,6 +126,10 @@ Maybe one of these days I'll get around to fixing my website up. :)
 Changelog
 ---------
 
+### 0.1.3
+
+- Remove dependency on clippy. (Still using clippy, but just as `cargo clippy` now.)
+
 ### 0.1.2
 
 - Changed `HarshFactory` to `HarshBuilder` in order to stop rubbing my OCD the wrong way<sup>1</sup>
