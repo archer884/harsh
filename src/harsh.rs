@@ -26,7 +26,7 @@ pub struct Harsh {
 impl Harsh {
     /// Encodes a slice of `u64` values into a single hashid.
     pub fn encode(&self, values: &[u64]) -> Option<String> {
-        if values.len() == 0 {
+        if values.is_empty() {
             return None;
         }
 
@@ -353,7 +353,7 @@ fn guards(alphabet: &mut Vec<u8>, separators: &mut Vec<u8>) -> Vec<u8> {
 }
 
 fn shuffle(values: &mut [u8], salt: &[u8]) {
-    if salt.len() == 0 {
+    if salt.is_empty() {
         return;
     }
 
