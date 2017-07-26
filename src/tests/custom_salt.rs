@@ -17,14 +17,18 @@ fn ordinary_salt() {
 
 #[test]
 fn long_salt() {
-    test_salt("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+\\|'\";:/?.>,<{[}]",
-              "should work with a really long salt");
+    test_salt(
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+\\|'\";:/?.>,<{[}]",
+        "should work with a really long salt",
+    );
 }
 
 #[test]
 fn weird_salt() {
-    test_salt("`~!@#$%^&*()-_=+\\|'\";:/?.>,<{[}]",
-              "should work with a weird salt")
+    test_salt(
+        "`~!@#$%^&*()-_=+\\|'\";:/?.>,<{[}]",
+        "should work with a weird salt",
+    )
 }
 
 fn test_salt(salt: &str, message: &str) {
