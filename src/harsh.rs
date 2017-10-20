@@ -8,6 +8,13 @@ const SEPARATOR_DIV: f64 = 3.5;
 const GUARD_DIV: f64 = 12.0;
 const MINIMUM_ALPHABET_LENGTH: usize = 16;
 
+pub type SingleResult = ::std::result::Result<u64, UnexpectedResult>;
+
+pub enum UnexpectedResult {
+    None,
+    Many(Vec<u64>)
+}
+
 /// A rustic implementation of Hashids.
 ///
 /// This should be created by use of the `HarshBuilder` struct, which
@@ -182,6 +189,20 @@ impl Harsh {
             }
         }
     }
+
+    /// Decodes a hashid into a single value.
+    ///
+    /// If the hashid decoded is not a single value, returns an error value containing anything
+    /// successfully decoded.
+    pub fn decode_single<T: AsRef<str>>(&self, value: T) -> SingleResult {
+        match self.decode(value) {
+            None => Err(UnexpectedResult::None),
+            Some(values) => match values.len() {
+                1 => unsafe { Ok(*values.get_unchecked(0)) }
+                _ => Err(UnexpectedResult::Many(values))
+            }
+        }
+    }
 }
 
 impl Default for Harsh {
@@ -253,7 +274,7 @@ impl HarshBuilder {
     pub fn init(self) -> Result<Harsh> {
         let alphabet = try!(unique_alphabet(&self.alphabet));
         if alphabet.len() < MINIMUM_ALPHABET_LENGTH {
-            return Err(Error::AlphabetLength);
+            return Err(Error::alphabet_length());
         }
 
         let salt = self.salt.unwrap_or_else(Vec::new);
@@ -294,7 +315,7 @@ fn unique_alphabet(alphabet: &Option<Vec<u8>>) -> Result<Vec<u8>> {
 
             for &item in alphabet {
                 if item == b' ' {
-                    return Err(Error::IllegalCharacter(item as char));
+                    return Err(Error::illegal_character(item as char));
                 }
 
                 if !reg.contains(&item) {
@@ -304,7 +325,7 @@ fn unique_alphabet(alphabet: &Option<Vec<u8>>) -> Result<Vec<u8>> {
             }
 
             if ret.len() < 16 {
-                Err(Error::AlphabetLength)
+                Err(Error::alphabet_length())
             } else {
                 Ok(ret)
             }
