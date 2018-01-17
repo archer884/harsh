@@ -1,7 +1,8 @@
 use std::error;
 use std::fmt;
+use std::result;
 
-pub type Result<T> = ::std::result::Result<T, Error>;
+pub type Result<T> = result::Result<T, Error>;
 
 static ALPHABET_LENGTH_MESSAGE: &str =
     "The provided alphabet does not contain enough unique characters";
