@@ -32,6 +32,8 @@ pub struct Harsh {
 impl Harsh {
     /// Encodes a slice of `u64` values into a single hashid.
     pub fn encode(&self, values: &[u64]) -> Option<String> {
+        use std::cmp;
+
         if values.is_empty() {
             return None;
         }
@@ -39,7 +41,7 @@ impl Harsh {
         let nhash = create_nhash(values);
 
         let mut alphabet = self.alphabet.clone();
-        let mut buffer = String::new();
+        let mut buffer = String::with_capacity(cmp::max(5, self.hash_length));
 
         let idx = (nhash % alphabet.len() as u64) as usize;
         let lottery = alphabet[idx];
