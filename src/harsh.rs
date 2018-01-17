@@ -1,4 +1,5 @@
 use {Error, Result};
+use std::result;
 use std::str;
 
 const DEFAULT_ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
@@ -7,7 +8,7 @@ const SEPARATOR_DIV: f64 = 3.5;
 const GUARD_DIV: f64 = 12.0;
 const MINIMUM_ALPHABET_LENGTH: usize = 16;
 
-pub type SingleResult = ::std::result::Result<u64, UnexpectedResult>;
+pub type SingleResult = result::Result<u64, UnexpectedResult>;
 
 pub enum UnexpectedResult {
     None,
