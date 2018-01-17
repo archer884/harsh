@@ -1,9 +1,9 @@
 use {Error, Result};
 use std::str;
 
-const DEFAULT_ALPHABET: &'static [u8] =
+const DEFAULT_ALPHABET: &[u8] =
     b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-const DEFAULT_SEPARATORS: &'static [u8] = b"cfhistuCFHISTU";
+const DEFAULT_SEPARATORS: & [u8] = b"cfhistuCFHISTU";
 const SEPARATOR_DIV: f64 = 3.5;
 const GUARD_DIV: f64 = 12.0;
 const MINIMUM_ALPHABET_LENGTH: usize = 16;
@@ -272,7 +272,7 @@ impl HarshBuilder {
     ///
     /// This method will consume the `HarshBuilder`.
     pub fn init(self) -> Result<Harsh> {
-        let alphabet = try!(unique_alphabet(&self.alphabet));
+        let alphabet = unique_alphabet(&self.alphabet)?;
         if alphabet.len() < MINIMUM_ALPHABET_LENGTH {
             return Err(Error::alphabet_length());
         }
