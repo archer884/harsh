@@ -3,7 +3,8 @@ use std::fmt;
 
 pub type Result<T> = ::std::result::Result<T, Error>;
 
-static ALPHABET_LENGTH_MESSAGE: &str = "The provided alphabet does not contain enough unique characters";
+static ALPHABET_LENGTH_MESSAGE: &str =
+    "The provided alphabet does not contain enough unique characters";
 static ILLEGAL_CHARACTER_MESSAGE: &str = "The provided alphabet contains an illegal character";
 
 /// Represents potential errors encountered during `Harsh` initialization and usage.
@@ -14,11 +15,15 @@ pub struct Error {
 
 impl Error {
     pub(crate) fn alphabet_length() -> Self {
-        Self { kind: ErrorKind::AlphabetLength }
+        Self {
+            kind: ErrorKind::AlphabetLength,
+        }
     }
 
     pub(crate) fn illegal_character(c: char) -> Self {
-        Self { kind: ErrorKind::IllegalCharacter(c) }
+        Self {
+            kind: ErrorKind::IllegalCharacter(c),
+        }
     }
 }
 
