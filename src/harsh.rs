@@ -1,9 +1,8 @@
 use {Error, Result};
 use std::str;
 
-const DEFAULT_ALPHABET: &[u8] =
-    b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-const DEFAULT_SEPARATORS: & [u8] = b"cfhistuCFHISTU";
+const DEFAULT_ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+const DEFAULT_SEPARATORS: &[u8] = b"cfhistuCFHISTU";
 const SEPARATOR_DIV: f64 = 3.5;
 const GUARD_DIV: f64 = 12.0;
 const MINIMUM_ALPHABET_LENGTH: usize = 16;
@@ -12,7 +11,7 @@ pub type SingleResult = ::std::result::Result<u64, UnexpectedResult>;
 
 pub enum UnexpectedResult {
     None,
-    Many(Vec<u64>)
+    Many(Vec<u64>),
 }
 
 /// A rustic implementation of Hashids.
@@ -64,24 +63,22 @@ impl Harsh {
 
             if idx + 1 < values.len() {
                 value %= (last.bytes().nth(0).unwrap_or(0) as usize + idx) as u64;
-                buffer.push(
-                    self.separators[(value % self.separators.len() as u64) as usize] as char,
-                );
+                buffer
+                    .push(self.separators[(value % self.separators.len() as u64) as usize] as char);
             }
         }
 
         if buffer.len() < self.hash_length {
-            let guard_index = (nhash as usize +
-                                   buffer.bytes().nth(0).expect("hellfire and damnation") as
-                                       usize) % self.guards.len();
+            let guard_index = (nhash as usize
+                + buffer.bytes().nth(0).expect("hellfire and damnation") as usize)
+                % self.guards.len();
             let guard = self.guards[guard_index];
             buffer.insert(0, guard as char);
 
             if buffer.len() < self.hash_length {
-                let guard_index = (nhash as usize +
-                                       buffer.bytes().nth(2).expect(
-                        "hellfire and damnation",
-                    ) as usize) % self.guards.len();
+                let guard_index = (nhash as usize
+                    + buffer.bytes().nth(2).expect("hellfire and damnation") as usize)
+                    % self.guards.len();
                 let guard = self.guards[guard_index];
                 buffer.push(guard as char);
             }
@@ -160,9 +157,9 @@ impl Harsh {
         let values: Option<Vec<_>> = hex.as_bytes()
             .chunks(12)
             .map(|chunk| {
-                str::from_utf8(chunk).ok().and_then(|s| {
-                    u64::from_str_radix(&("1".to_owned() + s), 16).ok()
-                })
+                str::from_utf8(chunk)
+                    .ok()
+                    .and_then(|s| u64::from_str_radix(&("1".to_owned() + s), 16).ok())
             })
             .collect();
 
@@ -198,9 +195,9 @@ impl Harsh {
         match self.decode(value) {
             None => Err(UnexpectedResult::None),
             Some(values) => match values.len() {
-                1 => unsafe { Ok(*values.get_unchecked(0)) }
-                _ => Err(UnexpectedResult::Many(values))
-            }
+                1 => unsafe { Ok(*values.get_unchecked(0)) },
+                _ => Err(UnexpectedResult::Many(values)),
+            },
         }
     }
 }
@@ -294,9 +291,10 @@ impl HarshBuilder {
 
 #[inline]
 fn create_nhash(values: &[u64]) -> u64 {
-    values.iter().enumerate().fold(0, |a, (idx, value)| {
-        a + (value % (idx + 100) as u64)
-    })
+    values
+        .iter()
+        .enumerate()
+        .fold(0, |a, (idx, value)| a + (value % (idx + 100) as u64))
 }
 
 fn unique_alphabet(alphabet: &Option<Vec<u8>>) -> Result<Vec<u8>> {
@@ -426,9 +424,10 @@ fn hash(mut value: u64, alphabet: &[u8]) -> String {
 
 fn unhash(input: &[u8], alphabet: &[u8]) -> u64 {
     input.iter().enumerate().fold(0, |a, (idx, &value)| {
-        let pos = alphabet.iter().position(|&item| item == value).expect(
-            "what a world, what a world!",
-        );
+        let pos = alphabet
+            .iter()
+            .position(|&item| item == value)
+            .expect("what a world, what a world!");
         a + (pos as u64 * (alphabet.len() as u64).pow((input.len() - idx - 1) as u32))
     })
 }
@@ -444,9 +443,10 @@ mod tests {
 
     #[test]
     fn can_encode() {
-        let harsh = HarshBuilder::new().salt("this is my salt").init().expect(
-            "failed to initialize harsh",
-        );
+        let harsh = HarshBuilder::new()
+            .salt("this is my salt")
+            .init()
+            .expect("failed to initialize harsh");
 
         assert_eq!(
             "4o6Z7KqxE",
@@ -489,9 +489,10 @@ mod tests {
 
     #[test]
     fn can_decode() {
-        let harsh = HarshBuilder::new().salt("this is my salt").init().expect(
-            "failed to initialize harsh",
-        );
+        let harsh = HarshBuilder::new()
+            .salt("this is my salt")
+            .init()
+            .expect("failed to initialize harsh");
 
         assert_eq!(
             &[1226198605112],
@@ -534,9 +535,10 @@ mod tests {
 
     #[test]
     fn can_encode_hex() {
-        let harsh = HarshBuilder::new().salt("this is my salt").init().expect(
-            "failed to initialize harsh",
-        );
+        let harsh = HarshBuilder::new()
+            .salt("this is my salt")
+            .init()
+            .expect("failed to initialize harsh");
 
         assert_eq!(
             "lzY",
@@ -587,9 +589,9 @@ mod tests {
         let harsh = HarshBuilder::new().init().unwrap();
         assert_eq!(
             "y42LW46J9luq3Xq9XMly",
-            &harsh.encode_hex("507f1f77bcf86cd799439011").expect(
-                "failed to encode",
-            ),
+            &harsh
+                .encode_hex("507f1f77bcf86cd799439011",)
+                .expect("failed to encode",),
             "error encoding `507f1f77bcf86cd799439011`"
         );
     }
@@ -624,9 +626,10 @@ mod tests {
 
     #[test]
     fn can_decode_hex() {
-        let harsh = HarshBuilder::new().salt("this is my salt").init().expect(
-            "failed to initialize harsh",
-        );
+        let harsh = HarshBuilder::new()
+            .salt("this is my salt")
+            .init()
+            .expect("failed to initialize harsh");
 
         assert_eq!(
             "fa",
@@ -677,9 +680,9 @@ mod tests {
         let harsh = HarshBuilder::new().init().unwrap();
         assert_eq!(
             "507f1f77bcf86cd799439011",
-            harsh.decode_hex("y42LW46J9luq3Xq9XMly").expect(
-                "failed to decode",
-            ),
+            harsh
+                .decode_hex("y42LW46J9luq3Xq9XMly",)
+                .expect("failed to decode",),
             "error decoding `y42LW46J9luq3Xq9XMly`"
         );
     }
