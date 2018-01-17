@@ -1,5 +1,0 @@
-format_strings = false
-reorder_imports = true
-fn_args_paren_newline = true
-#fn_args_layout = "Block"
-newline_style = "Unix"
