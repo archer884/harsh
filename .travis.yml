@@ -3,7 +3,6 @@ cache: cargo
 rust: stable
 os:
     - linux
-    - osx
     - windows
 script:
     - cargo build -v
