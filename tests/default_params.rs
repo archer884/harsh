@@ -1,3 +1,5 @@
+extern crate harsh;
+
 use harsh::Harsh;
 
 const TEST_CASES: [(&'static str, &'static [u64]); 14] = [
