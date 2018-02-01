@@ -1,3 +1,5 @@
+extern crate harsh;
+
 use harsh::HarshBuilder;
 
 const NUMBERS: [u64; 3] = [1, 2, 3];

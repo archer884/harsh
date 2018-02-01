@@ -1,3 +1,5 @@
+extern crate harsh;
+
 use harsh::HarshBuilder;
 
 #[test]

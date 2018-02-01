@@ -1,6 +1,3 @@
-#[cfg(test)]
-mod tests;
-
 mod error;
 mod harsh;
 
