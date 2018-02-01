@@ -11,3 +11,6 @@ keywords = ["hashids"]
 categories = ["encoding", "value-formatting", "web-programming"]
 
 [dependencies]
+
+[dev-dependencies]
+quickcheck = "0.6"
