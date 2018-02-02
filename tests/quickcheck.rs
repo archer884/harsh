@@ -8,7 +8,7 @@ quickcheck!{
     fn decode_no_panic(encoded: String) -> () {
         let harsh = harsh::Harsh::default();
 
-        harsh.decode(encoded);
+        let _ = harsh.decode(encoded);
     }
 }
 

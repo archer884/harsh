@@ -7,7 +7,7 @@ use test::{Bencher, black_box};
 
 use harsh::{Harsh, HarshBuilder};
 
-const CUSTOM_SALT: &'static str = "i am the salt of the earth";
+const CUSTOM_SALT: &str = "i am the salt of the earth";
 
 fn init() -> Harsh {
     black_box(HarshBuilder::new().salt(black_box(CUSTOM_SALT)).length(black_box(20)).init().unwrap())
@@ -23,12 +23,12 @@ fn data() -> Vec<u64> {
 
 #[bench]
 fn custom_creation(b: &mut Bencher) {
-    b.iter(|| init());
+    b.iter(init);
 }
 
 #[bench]
 fn default_creation(b: &mut Bencher) {
-    b.iter(|| Harsh::default());
+    b.iter(Harsh::default);
 }
 
 #[bench]

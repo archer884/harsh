@@ -2,7 +2,7 @@ extern crate harsh;
 
 use harsh::Harsh;
 
-const TEST_CASES: [(&'static str, &'static str); 8] = [
+const TEST_CASES: [(&str, &str); 8] = [
     ("wpVL4j9g", "deadbeef"),
     ("kmP69lB3xv", "abcdef123456"),
     ("47JWg0kv4VU0G2KBO2", "ABCDDD6666DDEEEEEEEEE"),

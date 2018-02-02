@@ -2,7 +2,7 @@ extern crate harsh;
 
 use harsh::HarshBuilder;
 
-const NUMBERS: &'static [u64] = &[1, 2, 3];
+const NUMBERS: &[u64] = &[1, 2, 3];
 
 #[test]
 fn min_length_0() {
