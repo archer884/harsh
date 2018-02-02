@@ -9,10 +9,10 @@ Quick example
 -------
 
 ```rust
-let harsh = HarshBuilder::new().init().unwrap();
+let harsh = HarshBuilder::new().init()?;
 
-let id = harsh.encode(&[1, 2, 3]).unwrap(); // "o2fXhV"
-let numbers = hashids.decode(id).unwrap(); // [1, 2, 3]
+let id = harsh.encode(&[1, 2, 3])?; // "o2fXhV"
+let numbers = hashids.decode(id)?; // [1, 2, 3]
 ```
 
 **Make your ids unique:**
@@ -20,11 +20,11 @@ let numbers = hashids.decode(id).unwrap(); // [1, 2, 3]
 Pass a project name to make your ids unique:
 
 ```rust
-let harsh = HarshBuilder::new().salt("My Project").init().unwrap();
-let id = harsh.encode(&[1, 2, 3]).unwrap(); // "Z4UrtW"
+let harsh = HarshBuilder::new().salt("My Project").init()?;
+let id = harsh.encode(&[1, 2, 3])?; // "Z4UrtW"
 
-let harsh = HarshBuilder::new().salt("My Other Project").init().unwrap();
-let id = harsh.encode(&[1, 2, 3]).unwrap(); // "gPUasb"
+let harsh = HarshBuilder::new().salt("My Other Project").init()?;
+let id = harsh.encode(&[1, 2, 3])?; // "gPUasb"
 ```
 
 **Use padding to make your ids longer:**
@@ -32,18 +32,18 @@ let id = harsh.encode(&[1, 2, 3]).unwrap(); // "gPUasb"
 Note that ids are only padded to fit **at least** a certain length. It doesn't mean that your ids will be *exactly* that length.
 
 ```rust
-let harsh = HarshBuilder::new().init().unwrap(); // no padding
-let id = harsh.encode(&[1]).unwrap() // "jR"
+let harsh = HarshBuilder::new().init()?; // no padding
+let id = harsh.encode(&[1])? // "jR"
 
-let harsh = HarshBuilder::new().length(10).init().unwrap(); // pad to length 10
-let id = harsh.encode(&[1]).unwrap() // "VolejRejNm"
+let harsh = HarshBuilder::new().length(10).init()?; // pad to length 10
+let id = harsh.encode(&[1])? // "VolejRejNm"
 ```
 
 **Pass a custom alphabet:**
 
 ```rust
-let harsh = HarshBuilder::new().alphabet("abcdefghijklmnopqrstuvwxyz").init().unwrap(); // all lowercase
-let id = harsh.encode(&[1, 2, 3]).unwrap(); // "mdfphx"
+let harsh = HarshBuilder::new().alphabet("abcdefghijklmnopqrstuvwxyz").init()?; // all lowercase
+let id = harsh.encode(&[1, 2, 3])?; // "mdfphx"
 ```
 
 **Encode hex instead of numbers:**
@@ -51,10 +51,10 @@ let id = harsh.encode(&[1, 2, 3]).unwrap(); // "mdfphx"
 Useful if you want to encode [Mongo](https://www.mongodb.com/)'s ObjectIds. Note that *there is no limit* on how large of a hex number you can pass (it does not have to be Mongo's ObjectId).
 
 ```rust
-let harsh = HarshBuilder::new().init().unwrap();
+let harsh = HarshBuilder::new().init()?;
 
-let id = harsh.encode_hex("507f1f77bcf86cd799439011").unwrap(); // "y42LW46J9luq3Xq9XMly"
-let hex = harsh.decode_hex("y42LW46J9luq3Xq9XMly").unwrap(); // "507f1f77bcf86cd799439011" 
+let id = harsh.encode_hex("507f1f77bcf86cd799439011")?; // "y42LW46J9luq3Xq9XMly"
+let hex = harsh.decode_hex("y42LW46J9luq3Xq9XMly")?; // "507f1f77bcf86cd799439011" 
 ```
 
 Pitfalls
@@ -63,22 +63,14 @@ Pitfalls
 1. When decoding, output is always an array of numbers (even if you encode only one number):
 
 	```rust
-	let harsh = HarshBuilder::new().init().unwrap();
+	let harsh = HarshBuilder::new().init()?;
 
-    let id = harsh.encode(&[1]).unwrap();
-    println!("{:?}", harsh.decode(&id).unwrap()); // [1]
+    let id = harsh.encode(&[1])?;
+    println!("{:?}", harsh.decode(&id)?); // [1]
 	```
 
 2. Encoding negative numbers is not supported.
-3. If you pass bogus input to `encode()`, an empty string will be returned:
-
-	```rust
-	let harsh = HarshBuilder::new().init().unwrap();
-
-	let id = harsh.decode("a123"); // note lack of unwrap call; would panic here
-	println!("{:?}", id); // "None"
-	```
-
+3. If you pass bogus input to `encode()`, an error will be returned.
 4. Do not use this library as a security tool and do not encode sensitive data. This is **not** an encryption library.
 
 Randomness
@@ -89,22 +81,22 @@ The primary purpose of Hashids is to obfuscate ids. It's not meant or tested to 
 No repeating patterns showing there are 3 identical numbers in the id:
 
 ```rust
-let harsh = HarshBuilder::new().init().unwrap();
-println!("{}", harsh.encode(&[5, 5, 5]).unwrap()); // A6t1tQ
+let harsh = HarshBuilder::new().init()?;
+println!("{}", harsh.encode(&[5, 5, 5])?); // A6t1tQ
 ```
 
 Same with incremented numbers:
 
 ```rust
-let harsh = HarshBuilder::new().init().unwrap();
+let harsh = HarshBuilder::new().init()?;
 
-println!("{}", harsh.encode(&[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).unwrap()); // wpfLh9iwsqt0uyCEFjHM
+println!("{}", harsh.encode(&[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])?); // wpfLh9iwsqt0uyCEFjHM
 
-println!("{}", harsh.encode(&[1]).unwrap()); // jR
-println!("{}", harsh.encode(&[2]).unwrap()); // k5
-println!("{}", harsh.encode(&[3]).unwrap()); // l5
-println!("{}", harsh.encode(&[4]).unwrap()); // mO
-println!("{}", harsh.encode(&[5]).unwrap()); // nR
+println!("{}", harsh.encode(&[1])?); // jR
+println!("{}", harsh.encode(&[2])?); // k5
+println!("{}", harsh.encode(&[3])?); // l5
+println!("{}", harsh.encode(&[4])?); // mO
+println!("{}", harsh.encode(&[5])?); // nR
 ```
 
 Curses! #$%@
