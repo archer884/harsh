@@ -4,10 +4,6 @@ use std::result;
 
 pub type Result<T> = result::Result<T, Error>;
 
-static ALPHABET_LENGTH_MESSAGE: &str =
-    "The provided alphabet does not contain enough unique characters";
-static ILLEGAL_CHARACTER_MESSAGE: &str = "The provided alphabet contains an illegal character";
-
 /// Represents potential errors encountered during `Harsh` initialization and usage.
 #[derive(Debug)]
 pub struct Error {
@@ -21,9 +17,21 @@ impl Error {
         }
     }
 
+    pub(crate) fn character_not_in_alphabet(c: char) -> Self {
+        Self {
+            kind: ErrorKind::CharacterNotInAlphabet(c)
+        }
+    }
+
     pub(crate) fn illegal_character(c: char) -> Self {
         Self {
             kind: ErrorKind::IllegalCharacter(c),
+        }
+    }
+
+    pub(crate) fn other(s: &'static str) -> Self {
+        Self {
+            kind: ErrorKind::Other(s)
         }
     }
 }
@@ -33,15 +41,33 @@ pub enum ErrorKind {
     /// Alphabet contains insufficient distinct characters
     AlphabetLength,
 
+    /// Character not in alphabet
+    CharacterNotInAlphabet(char),
+
     /// Alphabet contains an illegal character
     IllegalCharacter(char),
+
+    Other(&'static str),
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.kind {
-            ErrorKind::AlphabetLength => write!(f, "{}", ALPHABET_LENGTH_MESSAGE),
-            ErrorKind::IllegalCharacter(c) => write!(f, "{} ({})", ILLEGAL_CHARACTER_MESSAGE, c),
+            ErrorKind::AlphabetLength => {
+                write!(f, "The provided alphabet does not contain enough unique characters")
+            }
+
+            ErrorKind::CharacterNotInAlphabet(c) => {
+                write!(f, "Attempted to decode character not in alphabet: {}", c)
+            }
+
+            ErrorKind::IllegalCharacter(c) => {
+                write!(f, "The provided alphabet contains an illegal character: {}", c)
+            }
+
+            ErrorKind::Other(s) => {
+                write!(f, "{}", s)
+            }
         }
     }
 }
@@ -49,8 +75,10 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match self.kind {
-            ErrorKind::AlphabetLength => ALPHABET_LENGTH_MESSAGE,
-            ErrorKind::IllegalCharacter(_) => ILLEGAL_CHARACTER_MESSAGE,
+            ErrorKind::AlphabetLength => "The provided alphabet does not contain enough unique characters",
+            ErrorKind::CharacterNotInAlphabet(_) => "Attempted to decode character not in alphabet",
+            ErrorKind::IllegalCharacter(_) => "The provided alphabet contains an illegal character",
+            ErrorKind::Other(s) => s,
         }
     }
 }

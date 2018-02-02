@@ -32,18 +32,16 @@ fn should_return_none_for_encoding_nothing() {
 
 #[test]
 fn should_return_none_for_decoding_nothing() {
-    assert_eq!(
-        None,
-        Harsh::default().decode(""),
-        "should return None when decoding nothing"
+    assert!(
+        Harsh::default().decode("").is_err(),
+        "should return Err(_) when decoding nothing"
     );
 }
 
 #[test]
 fn should_return_none_for_decoding_invalid_id() {
-    assert_eq!(
-        None,
-        Harsh::default().decode("f"),
+    assert!(
+        Harsh::default().decode("f").is_err(),
         "should return None when decoding an invalid id"
     );
 }
@@ -58,10 +56,9 @@ fn should_return_none_when_encoding_non_hex_input() {
 }
 
 #[test]
-fn should_return_none_when_hex_decoding_invalid_id() {
-    assert_eq!(
-        None,
-        Harsh::default().decode_hex("f"),
-        "should return None when hex-decoding an invalid id"
+fn should_return_err_when_hex_decoding_invalid_id() {
+    assert!(
+        Harsh::default().decode_hex("f").is_err(),
+        "should return Err(_) when hex-decoding an invalid id"
     );
 }

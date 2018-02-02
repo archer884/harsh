@@ -1,4 +1,5 @@
 use {Error, Result};
+use math;
 use std::result;
 use std::str;
 
@@ -113,7 +114,7 @@ impl Harsh {
     }
 
     /// Decodes a single hashid into a slice of `u64` values.
-    pub fn decode<T: AsRef<str>>(&self, value: T) -> Option<Vec<u64>> {
+    pub fn decode<T: AsRef<str>>(&self, value: T) -> Result<Vec<u64>> {
         let mut value = value.as_ref().as_bytes().to_vec();
 
         if let Some(guard_idx) = value.iter().rposition(|u| self.guards.contains(u)) {
@@ -126,7 +127,7 @@ impl Harsh {
         };
 
         if value.len() < 2 {
-            return None;
+            return Err(Error::other("Value too short to be decoded"));
         }
 
         let mut alphabet = self.alphabet.clone();
@@ -135,24 +136,21 @@ impl Harsh {
         let value = &value[1..];
         let segments: Vec<_> = value.split(|u| self.separators.contains(u)).collect();
 
-        Some(
-            segments
-                .into_iter()
-                .map(|segment| {
-                    let buffer = {
-                        let mut buffer = Vec::with_capacity(self.salt.len() + alphabet.len() + 1);
-                        buffer.push(lottery);
-                        buffer.extend_from_slice(&self.salt);
-                        buffer.extend_from_slice(&alphabet);
-                        buffer
-                    };
+        segments.into_iter()
+            .map(|segment| {
+                let buffer = {
+                    let mut buffer = Vec::with_capacity(self.salt.len() + alphabet.len() + 1);
+                    buffer.push(lottery);
+                    buffer.extend_from_slice(&self.salt);
+                    buffer.extend_from_slice(&alphabet);
+                    buffer
+                };
 
-                    let alphabet_len = alphabet.len();
-                    shuffle(&mut alphabet, &buffer[..alphabet_len]);
-                    unhash(segment, &alphabet)
-                })
-                .collect(),
-        )
+                let alphabet_len = alphabet.len();
+                shuffle(&mut alphabet, &buffer[..alphabet_len]);
+                unhash(segment, &alphabet)
+            })
+            .collect()
     }
 
     /// Encodes a hex string into a hashid.
@@ -170,24 +168,21 @@ impl Harsh {
     }
 
     /// Decodes a hashid into a hex string.
-    pub fn decode_hex(&self, value: &str) -> Option<String> {
+    pub fn decode_hex(&self, value: &str) -> Result<String> {
         use std::fmt::Write;
 
-        match self.decode(value) {
-            None => None,
-            Some(ref values) => {
-                let mut result = String::new();
-                let mut buffer = String::new();
+        self.decode(value).map(|values| {
+            let mut result = String::new();
+            let mut buffer = String::new();
 
-                for n in values {
-                    write!(buffer, "{:x}", n).expect("failed to write?!");
-                    result.push_str(&buffer[1..]);
-                    buffer.clear();
-                }
-
-                Some(result)
+            for n in values {
+                write!(buffer, "{:x}", n).expect("failed to write!?");
+                result.push_str(&buffer[1..]);
+                buffer.clear();
             }
-        }
+
+            result
+        })
     }
 
     /// Decodes a hashid into a single value.
@@ -196,8 +191,8 @@ impl Harsh {
     /// successfully decoded.
     pub fn decode_single<T: AsRef<str>>(&self, value: T) -> SingleResult {
         match self.decode(value) {
-            None => Err(UnexpectedResult::None),
-            Some(values) => match values.len() {
+            Err(_) => Err(UnexpectedResult::None),
+            Ok(values) => match values.len() {
                 1 => unsafe { Ok(*values.get_unchecked(0)) },
                 _ => Err(UnexpectedResult::Many(values)),
             },
@@ -425,14 +420,19 @@ fn hash(mut value: u64, alphabet: &[u8]) -> String {
     }
 }
 
-fn unhash(input: &[u8], alphabet: &[u8]) -> u64 {
-    input.iter().enumerate().fold(0, |a, (idx, &value)| {
-        let pos = alphabet
-            .iter()
+fn unhash(input: &[u8], alphabet: &[u8]) -> Result<u64> {
+    let mut acc = 0u64;
+
+    for (idx, &value) in input.iter().enumerate() {
+        let pos = alphabet.iter()
             .position(|&item| item == value)
-            .expect("what a world, what a world!");
-        a + (pos as u64 * (alphabet.len() as u64).pow((input.len() - idx - 1) as u32))
-    })
+            .ok_or_else(|| Error::character_not_in_alphabet(value as char))?;
+
+        let incr = math::wrapping_pow(alphabet.len() as u64, (input.len() - idx - 1) as usize);
+        acc = acc.wrapping_add((pos as u64).wrapping_mul(incr));
+    }
+
+    Ok(acc)
 }
 
 #[cfg(test)]
