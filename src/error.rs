@@ -3,11 +3,10 @@ use std::fmt;
 
 pub type Result<T> = ::std::result::Result<T, Error>;
 
-const ALPHABET_LENGTH_MESSAGE: &'static str =
+const ALPHABET_LENGTH_MESSAGE: &str =
     "The provided alphabet does not contain enough unique characters";
-const ILLEGAL_CHARACTER_MESSAGE: &'static str =
-    "The provided alphabet contains an illegal character";
-const SEPARATOR_MESSAGE: &'static str =
+const ILLEGAL_CHARACTER_MESSAGE: &str = "The provided alphabet contains an illegal character";
+const SEPARATOR_MESSAGE: &str =
     "The provided separators contain a character not found in the alphabet";
 
 /// Represents potential errors encountered during `Harsh` initialization.

@@ -1,9 +1,8 @@
 use {Error, Result};
 use std::str;
 
-const DEFAULT_ALPHABET: &'static [u8] =
-    b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-const DEFAULT_SEPARATORS: &'static [u8] = b"cfhistuCFHISTU";
+const DEFAULT_ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+const DEFAULT_SEPARATORS: &[u8] = b"cfhistuCFHISTU";
 const SEPARATOR_DIV: f64 = 3.5;
 const GUARD_DIV: f64 = 12.0;
 const MINIMUM_ALPHABET_LENGTH: usize = 16;
@@ -708,9 +707,7 @@ mod tests {
 
     #[test]
     fn can_decode_with_invalid_alphabet() {
-        use harsh::Harsh;
-
-        let harsh = Harsh::default();
+        let harsh = harsh::Harsh::default();
         assert_eq!(None, harsh.decode("this$ain't|a\number"));
     }
 
