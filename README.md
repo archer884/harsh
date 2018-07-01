@@ -126,6 +126,10 @@ Maybe one of these days I'll get around to fixing my website up. :)
 Changelog
 ---------
 
+### 0.1.5
+
+- Fix panic when decoding values containing characters not found in alphabet
+
 ### 0.1.3
 
 - Remove dependency on clippy. (Still using clippy, but just as `cargo clippy` now.)
