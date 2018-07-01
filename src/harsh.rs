@@ -126,24 +126,22 @@ impl Harsh {
         let value = &value[1..];
         let segments: Vec<_> = value.split(|u| self.separators.contains(u)).collect();
 
-        Some(
-            segments
-                .into_iter()
-                .map(|segment| {
-                    let buffer = {
-                        let mut buffer = Vec::with_capacity(self.salt.len() + alphabet.len() + 1);
-                        buffer.push(lottery);
-                        buffer.extend_from_slice(&self.salt);
-                        buffer.extend_from_slice(&alphabet);
-                        buffer
-                    };
+        segments
+            .into_iter()
+            .map(|segment| {
+                let buffer = {
+                    let mut buffer = Vec::with_capacity(self.salt.len() + alphabet.len() + 1);
+                    buffer.push(lottery);
+                    buffer.extend_from_slice(&self.salt);
+                    buffer.extend_from_slice(&alphabet);
+                    buffer
+                };
 
-                    let alphabet_len = alphabet.len();
-                    shuffle(&mut alphabet, &buffer[..alphabet_len]);
-                    unhash(segment, &alphabet)
-                })
-                .collect(),
-        )
+                let alphabet_len = alphabet.len();
+                shuffle(&mut alphabet, &buffer[..alphabet_len]);
+                unhash(segment, &alphabet)
+            })
+            .collect()
     }
 
     /// Encodes a hex string into a hashid.
@@ -402,14 +400,10 @@ fn hash(mut value: u64, alphabet: &[u8]) -> String {
     }
 }
 
-fn unhash(input: &[u8], alphabet: &[u8]) -> u64 {
-    input.iter().enumerate().fold(0, |a, (idx, &value)| {
-        let pos = alphabet
-            .iter()
-            .position(|&item| item == value)
-            .expect("what a world, what a world!");
-            
-        a + (pos as u64 * (alphabet.len() as u64).pow((input.len() - idx - 1) as u32))
+fn unhash(input: &[u8], alphabet: &[u8]) -> Option<u64> {
+    input.iter().enumerate().fold(Some(0), |a, (idx, &value)| {
+        let pos = alphabet.iter().position(|&item| item == value)? as u64;
+        a.map(|a| a + (pos * (alphabet.len() as u64).pow((input.len() - idx - 1) as u32)))
     })
 }
 
