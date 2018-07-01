@@ -713,6 +713,14 @@ mod tests {
     }
 
     #[test]
+    fn can_decode_with_invalid_alphabet() {
+        use harsh::Harsh;
+
+        let harsh = Harsh::default();
+        assert_eq!(None, harsh.decode("this$ain't|a\number"));
+    }
+
+    #[test]
     fn can_decode_with_custom_alphabet() {
         let harsh = HarshBuilder::new()
             .alphabet("abcdefghijklmnopqrstuvwxyz")
