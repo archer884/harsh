@@ -1,4 +1,4 @@
-use harsh::Harsh;
+use crate::harsh::Harsh;
 
 const TEST_CASES: [(&'static str, &'static str); 8] = [
     ("wpVL4j9g", "deadbeef"),

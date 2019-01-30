@@ -1,4 +1,4 @@
-use harsh::HarshBuilder;
+use crate::harsh::HarshBuilder;
 
 #[test]
 fn empty_salt() {
