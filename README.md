@@ -12,7 +12,7 @@ Quick example
 let harsh = HarshBuilder::new().init().unwrap();
 
 let id = harsh.encode(&[1, 2, 3]).unwrap(); // "o2fXhV"
-let numbers = hashids.decode(id).unwrap(); // [1, 2, 3]
+let numbers = harsh.decode(id).unwrap(); // [1, 2, 3]
 ```
 
 **Make your ids unique:**
