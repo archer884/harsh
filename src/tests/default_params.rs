@@ -1,4 +1,4 @@
-use harsh::Harsh;
+use crate::harsh::Harsh;
 
 const TEST_CASES: [(&'static str, &'static [u64]); 14] = [
     ("gY", &[0]),
@@ -29,7 +29,7 @@ const TEST_CASES: [(&'static str, &'static [u64]); 14] = [
     (
         "1wfphpilsMtNumCRFRHXIDSqT2UPcWf1hZi3s7tN",
         &[
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
         ],
     ),
 ];

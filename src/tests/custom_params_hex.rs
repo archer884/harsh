@@ -1,4 +1,4 @@
-use harsh::HarshBuilder;
+use crate::harsh::HarshBuilder;
 
 const TEST_CASES: [(&'static str, &'static str); 8] = [
     ("0dbq3jwa8p4b3gk6gb8bv21goerm96", "deadbeef"),

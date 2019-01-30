@@ -1,6 +1,7 @@
 [package]
 name = "harsh"
 version = "0.1.5"
+edition = "2018"
 description = "Hashids implementation for Rust"
 readme = "README.md"
 repository = "https://github.com/archer884/harsh"

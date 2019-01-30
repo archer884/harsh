@@ -1,4 +1,4 @@
-use {Error, Result};
+use crate::error::{Error, Result};
 use std::str;
 
 const DEFAULT_ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
@@ -145,7 +145,8 @@ impl Harsh {
 
     /// Encodes a hex string into a hashid.
     pub fn encode_hex(&self, hex: &str) -> Option<String> {
-        let values: Option<Vec<_>> = hex.as_bytes()
+        let values: Option<Vec<_>> = hex
+            .as_bytes()
             .chunks(12)
             .map(|chunk| {
                 str::from_utf8(chunk)
@@ -246,7 +247,7 @@ impl HarshBuilder {
     ///
     /// This method will consume the `HarshBuilder`.
     pub fn init(self) -> Result<Harsh> {
-        let alphabet = try!(unique_alphabet(&self.alphabet));
+        let alphabet = unique_alphabet(&self.alphabet)?;
         if alphabet.len() < MINIMUM_ALPHABET_LENGTH {
             return Err(Error::AlphabetLength);
         }
@@ -408,11 +409,11 @@ fn unhash(input: &[u8], alphabet: &[u8]) -> Option<u64> {
 
 #[cfg(test)]
 mod tests {
-    use harsh::{self, HarshBuilder};
+    use super::{Harsh, HarshBuilder};
 
     #[test]
     fn harsh_default_does_not_panic() {
-        harsh::Harsh::default();
+        Harsh::default();
     }
 
     #[test]
@@ -707,7 +708,7 @@ mod tests {
 
     #[test]
     fn can_decode_with_invalid_alphabet() {
-        let harsh = harsh::Harsh::default();
+        let harsh = Harsh::default();
         assert_eq!(None, harsh.decode("this$ain't|a\number"));
     }
 
@@ -728,21 +729,21 @@ mod tests {
     #[test]
     fn create_nhash() {
         let values = &[1, 2, 3];
-        let nhash = harsh::create_nhash(values);
+        let nhash = super::create_nhash(values);
         assert_eq!(6, nhash);
     }
 
     #[test]
     fn hash() {
-        let result = harsh::hash(22, b"abcdefghijklmnopqrstuvwxyz");
+        let result = super::hash(22, b"abcdefghijklmnopqrstuvwxyz");
         assert_eq!("w", result);
     }
 
     #[test]
     fn alphabet_and_separator_generation() {
-        use harsh::{DEFAULT_ALPHABET, DEFAULT_SEPARATORS};
+        use super::{DEFAULT_ALPHABET, DEFAULT_SEPARATORS};
 
-        let (alphabet, separators) = harsh::alphabet_and_separators(
+        let (alphabet, separators) = super::alphabet_and_separators(
             &Some(DEFAULT_SEPARATORS.to_vec()),
             DEFAULT_ALPHABET,
             b"this is my salt",
@@ -760,10 +761,10 @@ mod tests {
 
     #[test]
     fn alphabet_and_separator_generation_with_few_separators() {
-        use harsh::DEFAULT_ALPHABET;
+        use super::DEFAULT_ALPHABET;
 
         let separators = b"fu";
-        let (alphabet, separators) = harsh::alphabet_and_separators(
+        let (alphabet, separators) = super::alphabet_and_separators(
             &Some(separators.to_vec()),
             DEFAULT_ALPHABET,
             b"this is my salt",
@@ -783,7 +784,7 @@ mod tests {
     fn shuffle() {
         let salt = b"1234";
         let mut values = "asdfzxcvqwer".bytes().collect::<Vec<_>>();
-        harsh::shuffle(&mut values, salt);
+        super::shuffle(&mut values, salt);
 
         assert_eq!("vdwqfrzcsxae", String::from_utf8_lossy(&values));
     }

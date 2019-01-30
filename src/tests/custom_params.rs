@@ -1,4 +1,4 @@
-use harsh::HarshBuilder;
+use crate::harsh::HarshBuilder;
 
 const TEST_CASES: [(&'static str, &'static [u64]); 14] = [
     ("nej1m3d5a6yn875e7gr9kbwpqol02q", &[0]),
@@ -29,7 +29,7 @@ const TEST_CASES: [(&'static str, &'static [u64]); 14] = [
     (
         "w1hwinuwt1cbs6xwzafmhdinuotpcosrxaz0fahl",
         &[
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
         ],
     ),
 ];

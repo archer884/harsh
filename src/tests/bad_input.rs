@@ -1,4 +1,4 @@
-use harsh::{Harsh, HarshBuilder};
+use crate::harsh::{Harsh, HarshBuilder};
 
 #[test]
 fn small_alphabet() {

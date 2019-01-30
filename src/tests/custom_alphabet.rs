@@ -1,4 +1,4 @@
-use harsh::HarshBuilder;
+use crate::harsh::HarshBuilder;
 
 const NUMBERS: [u64; 3] = [1, 2, 3];
 
