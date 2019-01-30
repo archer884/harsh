@@ -7,11 +7,11 @@ const SEPARATOR_DIV: f64 = 3.5;
 const GUARD_DIV: f64 = 12.0;
 const MINIMUM_ALPHABET_LENGTH: usize = 16;
 
-/// A rustic implementation of Hashids.
+/// A hashids-compatible hasher.
 ///
-/// This should be created by use of the `HarshBuilder` struct, which
-/// will be consumed upon initialization. `Harsh` is `Send + Sync`,
-/// meaning just one can be used pretty much through your system.
+/// It's probably not a great idea to use the default, because in that case
+/// your values will be entirely trivial to decode. On the other hand, this is
+/// not intended to be cryptographically-secure, so go nuts!
 #[derive(Clone, Debug)]
 pub struct Harsh {
     salt: Box<[u8]>,
@@ -186,9 +186,7 @@ impl Default for Harsh {
     }
 }
 
-/// Factory used to create a new `Harsh` instance.
-///
-/// Note that this factory will be consumed upon initialization.
+/// A builder used to configure and create a Harsh instance.
 #[derive(Debug, Default)]
 pub struct HarshBuilder {
     salt: Option<Vec<u8>>,
