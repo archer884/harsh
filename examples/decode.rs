@@ -1,11 +1,9 @@
-extern crate harsh;
+use harsh::{HarshBuilder, Result};
+use std::env;
 
-use harsh::HarshBuilder;
-
-fn main() {
-    let harsh = HarshBuilder::new().init().unwrap();
-    match std::env::args().nth(1) {
-        None => println!("provide something to decode, plzkthx"),
-        Some(ref value) => println!("{:?}", harsh.decode(value)),
-    }
+fn main() -> Result<()> {
+    let harsh = HarshBuilder::new().init()?;
+    let input = env::args().nth(1).expect("Wut?");
+    println!("{:?}", harsh.decode(input));
+    Ok(())
 }

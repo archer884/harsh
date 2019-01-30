@@ -1,15 +1,14 @@
-extern crate harsh;
+use harsh::{HarshBuilder, Result};
 
-use harsh::HarshBuilder;
-
-fn main() {
-    let harsh = HarshBuilder::new().init().unwrap();
-    match read_values() {
-        None => println!("provide some numeric args, plzkthx"),
-        Some(ref values) => println!("{}", harsh.encode(values).unwrap()),
-    }
+fn main() -> Result<()> {
+    let harsh = HarshBuilder::new().init()?;
+    println!("{:?}", harsh.encode(&read_values()));
+    Ok(())
 }
 
-fn read_values() -> Option<Vec<u64>> {
-    std::env::args().skip(1).map(|n| n.parse().ok()).collect()
+fn read_values() -> Vec<u64> {
+    std::env::args()
+        .skip(1)
+        .filter_map(|n| n.parse::<u64>().ok())
+        .collect()
 }
