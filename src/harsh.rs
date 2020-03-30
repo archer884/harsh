@@ -104,16 +104,15 @@ impl Harsh {
 
     /// Decodes a single hashid into a slice of `u64` values.
     pub fn decode<T: AsRef<str>>(&self, value: T) -> Option<Vec<u64>> {
-        let mut value = value.as_ref().as_bytes().to_vec();
+        let mut value = value.as_ref().as_bytes();
 
-        if let Some(guard_idx) = value.iter().rposition(|u| self.guards.contains(u)) {
-            value.truncate(guard_idx);
+        if let Some(guard_idx) = value.iter().position(|u| self.guards.contains(u)) {
+            value = &value[(guard_idx + 1)..];
         }
 
-        let value = match value.iter().position(|u| self.guards.contains(u)) {
-            None => &value[..],
-            Some(guard_idx) => &value[(guard_idx + 1)..],
-        };
+        if let Some(guard_idx) = value.iter().rposition(|u| self.guards.contains(u)) {
+            value = &value[..guard_idx];
+        }
 
         if value.len() < 2 {
             return None;
@@ -128,13 +127,10 @@ impl Harsh {
         segments
             .into_iter()
             .map(|segment| {
-                let buffer = {
-                    let mut buffer = Vec::with_capacity(self.salt.len() + alphabet.len() + 1);
-                    buffer.push(lottery);
-                    buffer.extend_from_slice(&self.salt);
-                    buffer.extend_from_slice(&alphabet);
-                    buffer
-                };
+                let mut buffer = Vec::with_capacity(self.salt.len() + alphabet.len() + 1);
+                buffer.push(lottery);
+                buffer.extend_from_slice(&self.salt);
+                buffer.extend_from_slice(&alphabet);
 
                 let alphabet_len = alphabet.len();
                 shuffle(&mut alphabet, &buffer[..alphabet_len]);
@@ -785,5 +781,18 @@ mod tests {
         super::shuffle(&mut values, salt);
 
         assert_eq!("vdwqfrzcsxae", String::from_utf8_lossy(&values));
+    }
+
+    #[test]
+    fn guard_characters_should_be_added_to_left_first() {
+        let harsh = HarshBuilder::new().length(3).init().unwrap();
+        let hashed_value = harsh.encode(&[1]).unwrap();
+
+        assert_eq!(&hashed_value, "ejR");
+        assert_eq!(
+            Some(vec![1]),
+            harsh.decode("ejR"),
+            "should return None when decoding a valid id with a garbage ending",
+        );
     }
 }
