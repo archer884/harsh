@@ -39,14 +39,10 @@ impl Harsh {
 
         for (idx, &value) in values.iter().enumerate() {
             let mut value = value;
-
-            let temp = {
-                let mut temp = Vec::with_capacity(self.salt.len() + alphabet.len() + 1);
-                temp.push(lottery);
-                temp.extend_from_slice(&self.salt);
-                temp.extend_from_slice(&alphabet);
-                temp
-            };
+            let mut temp = Vec::with_capacity(self.salt.len() + alphabet.len() + 1);
+            temp.push(lottery);
+            temp.extend_from_slice(&self.salt);
+            temp.extend_from_slice(&alphabet);
 
             let alphabet_len = alphabet.len();
             shuffle(&mut alphabet, &temp[..alphabet_len]);
