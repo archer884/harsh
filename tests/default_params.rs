@@ -1,4 +1,4 @@
-use crate::harsh::Harsh;
+use harsh::Harsh;
 
 const TEST_CASES: [(&'static str, &'static [u64]); 14] = [
     ("gY", &[0]),

@@ -68,9 +68,9 @@ impl Harsh {
             .build()
             .expect("Default options should not fail")
     }
-    
+
     /// Build a new instance of Harsh.
-    pub fn create() -> HarshBuilder {
+    pub fn builder() -> HarshBuilder {
         HarshBuilder::new()
     }
 
@@ -283,7 +283,9 @@ fn hash(mut value: u64, alphabet: &[u8]) -> String {
 fn unhash(input: &[u8], alphabet: &[u8]) -> Option<u64> {
     input.iter().enumerate().fold(Some(0), |a, (idx, &value)| {
         let pos = alphabet.iter().position(|&item| item == value)? as u64;
-        a.map(|a| a + (pos * (alphabet.len() as u64).pow((input.len() - idx - 1) as u32)))
+        let b = (alphabet.len() as u64).checked_pow((input.len() - idx - 1) as u32)?;
+        let c = pos.checked_mul(b)?;
+        a.map(|a| a + c)
     })
 }
 

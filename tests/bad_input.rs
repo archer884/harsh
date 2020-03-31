@@ -1,9 +1,9 @@
-use crate::harsh::Harsh;
+use harsh::Harsh;
 
 #[test]
 fn small_alphabet() {
     assert!(
-        !Harsh::create().alphabet("1234567890").build().is_ok(),
+        !Harsh::builder().alphabet("1234567890").build().is_ok(),
         "should throw an error with a small alphabet"
     );
 }
@@ -11,7 +11,7 @@ fn small_alphabet() {
 #[test]
 fn spaces_in_alphabet() {
     assert!(
-        !Harsh::create()
+        !Harsh::builder()
             .alphabet("a cdefghijklmnopqrstuvwxyz")
             .build()
             .is_ok(),

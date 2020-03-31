@@ -30,13 +30,12 @@
 //! even that zero inputs have been provided.
 //!
 //! ```rust
-//! # use harsh::{HarshBuilder, Result};
-//! # fn main() -> Result<()> {
-//! let harsh = HarshBuilder::new().salt("salt goes here!").init()?;
-//!
-//! let encoded = harsh.encode(&[1, 2, 3, 4, 5])
-//!     .expect("Sorry, you have to pass in a value or two.");
-//!
+//! # use harsh::Harsh;
+//! # use std::error::Error;
+//! # fn main() -> Result<(), Box<dyn Error>> {
+//! let harsh = Harsh::builder().salt("salt goes here!").build()?;
+//! let encoded = harsh.encode(&[1, 2, 3, 4, 5]);
+//! 
 //! assert_eq!("xrUQTnhgu7", encoded);
 //! # Ok(())
 //! # }
@@ -49,25 +48,22 @@
 //! valid Hashid.
 //!
 //! ```rust
-//! # use harsh::{HarshBuilder, Result};
-//! # fn main() -> Result<()> {
-//! # let harsh = HarshBuilder::new().salt("salt goes here!").init()?;
-//! # let encoded = harsh.encode(&[1, 2, 3, 4, 5]).unwrap();
-//! let decoded = harsh.decode(&encoded)
-//!     .expect("This better work...");
+//! # use harsh::Harsh;
+//! # use std::error::Error;
+//! # fn main() -> Result<(), Box<dyn Error>> {
+//! let harsh = Harsh::builder().salt("salt goes here!").build()?;
+//! # let encoded = harsh.encode(&[1, 2, 3, 4, 5]);
+//! let decoded = harsh.decode(&encoded)?;
 //!
-//! assert_eq!(&[1, 2, 3, 4, 5], &*decoded);
+//! assert_eq!(&decoded, &[1, 2, 3, 4, 5]);
 //! # Ok(())
 //! # }
 //! ```
 
-#[cfg(test)]
-mod tests;
-
 mod builder;
 mod harsh;
 
-pub use harsh::Harsh;
+pub use crate::harsh::Harsh;
 
 fn shuffle(values: &mut [u8], salt: &[u8]) {
     if salt.is_empty() {
