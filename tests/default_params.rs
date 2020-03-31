@@ -1,4 +1,4 @@
-use crate::harsh::Harsh;
+use harsh::Harsh;
 
 const TEST_CASES: [(&'static str, &'static [u64]); 14] = [
     ("gY", &[0]),
@@ -39,7 +39,7 @@ fn default_params() {
     let harsh = Harsh::default();
 
     for &(hash, values) in &TEST_CASES {
-        assert_eq!(hash, harsh.encode(values).unwrap());
+        assert_eq!(hash, harsh.encode(values));
         assert_eq!(values, &harsh.decode(hash).unwrap()[..]);
     }
 }

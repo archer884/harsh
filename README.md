@@ -10,9 +10,8 @@ Quick example
 -------
 
 ```rust
-let harsh = HarshBuilder::new().init().unwrap();
-
-let id = harsh.encode(&[1, 2, 3]).unwrap(); // "o2fXhV"
+let harsh = Harsh::default();
+let id = harsh.encode(&[1, 2, 3]); // "o2fXhV"
 let numbers = harsh.decode(id).unwrap(); // [1, 2, 3]
 ```
 
@@ -21,10 +20,10 @@ let numbers = harsh.decode(id).unwrap(); // [1, 2, 3]
 Pass a project name to make your ids unique:
 
 ```rust
-let harsh = HarshBuilder::new().salt("My Project").init().unwrap();
+let harsh = Harsh::builder().salt("My Project").build().unwrap();
 let id = harsh.encode(&[1, 2, 3]).unwrap(); // "Z4UrtW"
 
-let harsh = HarshBuilder::new().salt("My Other Project").init().unwrap();
+let harsh = Harsh::builder().salt("My Other Project").build().unwrap();
 let id = harsh.encode(&[1, 2, 3]).unwrap(); // "gPUasb"
 ```
 
@@ -33,18 +32,18 @@ let id = harsh.encode(&[1, 2, 3]).unwrap(); // "gPUasb"
 Note that ids are only padded to fit **at least** a certain length. It doesn't mean that your ids will be *exactly* that length.
 
 ```rust
-let harsh = HarshBuilder::new().init().unwrap(); // no padding
+let harsh = Harsh::default(); // no padding
 let id = harsh.encode(&[1]).unwrap() // "jR"
 
-let harsh = HarshBuilder::new().length(10).init().unwrap(); // pad to length 10
+let harsh = Harsh::builder().length(10).build().unwrap(); // pad to length 10
 let id = harsh.encode(&[1]).unwrap() // "VolejRejNm"
 ```
 
 **Pass a custom alphabet:**
 
 ```rust
-let harsh = HarshBuilder::new().alphabet("abcdefghijklmnopqrstuvwxyz").init().unwrap(); // all lowercase
-let id = harsh.encode(&[1, 2, 3]).unwrap(); // "mdfphx"
+let harsh = Harsh::builder().alphabet("abcdefghijklmnopqrstuvwxyz").build().unwrap(); // all lowercase
+let id = harsh.encode(&[1, 2, 3]); // "mdfphx"
 ```
 
 **Encode hex instead of numbers:**
@@ -52,7 +51,7 @@ let id = harsh.encode(&[1, 2, 3]).unwrap(); // "mdfphx"
 Useful if you want to encode [Mongo](https://www.mongodb.com/)'s ObjectIds. Note that *there is no limit* on how large of a hex number you can pass (it does not have to be Mongo's ObjectId).
 
 ```rust
-let harsh = HarshBuilder::new().init().unwrap();
+let harsh = Harsh::default();
 
 let id = harsh.encode_hex("507f1f77bcf86cd799439011").unwrap(); // "y42LW46J9luq3Xq9XMly"
 let hex = harsh.decode_hex("y42LW46J9luq3Xq9XMly").unwrap(); // "507f1f77bcf86cd799439011" 
@@ -64,7 +63,7 @@ Pitfalls
 1. When decoding, output is always an array of numbers (even if you encode only one number):
 
 	```rust
-	let harsh = HarshBuilder::new().init().unwrap();
+	let harsh = Harsh::default();
 
     let id = harsh.encode(&[1]).unwrap();
     println!("{:?}", harsh.decode(&id).unwrap()); // [1]
@@ -74,10 +73,10 @@ Pitfalls
 3. If you pass bogus input to `encode()`, an empty string will be returned:
 
 	```rust
-	let harsh = HarshBuilder::new().init().unwrap();
+	let harsh = Harsh::default();
 
 	let id = harsh.decode("a123"); // note lack of unwrap call; would panic here
-	println!("{:?}", id); // "None"
+	println!("{:?}", id); // ""
 	```
 
 4. Do not use this library as a security tool and do not encode sensitive data. This is **not** an encryption library.
@@ -90,22 +89,22 @@ The primary purpose of Hashids is to obfuscate ids. It's not meant or tested to 
 No repeating patterns showing there are 3 identical numbers in the id:
 
 ```rust
-let harsh = HarshBuilder::new().init().unwrap();
-println!("{}", harsh.encode(&[5, 5, 5]).unwrap()); // A6t1tQ
+let harsh = Harsh::default();
+println!("{}", harsh.encode(&[5, 5, 5])); // A6t1tQ
 ```
 
 Same with incremented numbers:
 
 ```rust
-let harsh = HarshBuilder::new().init().unwrap();
+let harsh = Harsh::default();
 
-println!("{}", harsh.encode(&[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).unwrap()); // wpfLh9iwsqt0uyCEFjHM
+println!("{}", harsh.encode(&[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])); // wpfLh9iwsqt0uyCEFjHM
 
-println!("{}", harsh.encode(&[1]).unwrap()); // jR
-println!("{}", harsh.encode(&[2]).unwrap()); // k5
-println!("{}", harsh.encode(&[3]).unwrap()); // l5
-println!("{}", harsh.encode(&[4]).unwrap()); // mO
-println!("{}", harsh.encode(&[5]).unwrap()); // nR
+println!("{}", harsh.encode(&[1])); // jR
+println!("{}", harsh.encode(&[2])); // k5
+println!("{}", harsh.encode(&[3])); // l5
+println!("{}", harsh.encode(&[4])); // mO
+println!("{}", harsh.encode(&[5])); // nR
 ```
 
 Curses! #$%@
@@ -126,6 +125,10 @@ Maybe one of these days I'll get around to fixing my website up. :)
 
 Changelog
 ---------
+
+### 0.2.0
+
+- Convert to result-based API and add quickcheck tests courtesy of Dr-Emann.
 
 ### 0.1.5
 

@@ -1,9 +1,8 @@
-use harsh::{HarshBuilder, Result};
+use harsh::Harsh;
 
-fn main() -> Result<()> {
-    let harsh = HarshBuilder::new().init()?;
+fn main() {
+    let harsh = Harsh::default();
     println!("{:?}", harsh.encode(&read_values()));
-    Ok(())
 }
 
 fn read_values() -> Vec<u64> {

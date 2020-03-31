@@ -1,31 +1,36 @@
-use crate::harsh::Harsh;
+use harsh::Harsh;
 
 const TEST_CASES: [(&'static str, &'static str); 8] = [
-    ("wpVL4j9g", "deadbeef"),
-    ("kmP69lB3xv", "abcdef123456"),
-    ("47JWg0kv4VU0G2KBO2", "ABCDDD6666DDEEEEEEEEE"),
-    ("y42LW46J9luq3Xq9XMly", "507f1f77bcf86cd799439011"),
+    ("0dbq3jwa8p4b3gk6gb8bv21goerm96", "deadbeef"),
+    ("190obdnk4j02pajjdande7aqj628mr", "abcdef123456"),
+    ("a1nvl5d9m3yo8pj1fqag8p9pqw4dyl", "ABCDDD6666DDEEEEEEEEE"),
+    ("1nvlml93k3066oas3l9lr1wn1k67dy", "507f1f77bcf86cd799439011"),
     (
-        "m1rO8xBQNquXmLvmO65BUO9KQmj",
+        "mgyband33ye3c6jj16yq1jayh6krqjbo",
         "f00000fddddddeeeee4444444ababab",
     ),
     (
-        "wBlnMA23NLIQDgw7XxErc2mlNyAjpw",
+        "9mnwgllqg1q2tdo63yya35a9ukgl6bbn6qn8",
         "abcdef123456abcdef123456abcdef123456",
     ),
     (
-        "VwLAoD9BqlT7xn4ZnBXJFmGZ51ZqrBhqrymEyvYLIP199",
+        "edjrkn9m6o69s0ewnq5lqanqsmk6loayorlohwd963r53e63xmml29",
         "f000000000000000000000000000000000000000000000000000f",
     ),
     (
-        "nBrz1rYyV0C0XKNXxB54fWN0yNvVjlip7127Jo3ri0Pqw",
+        "grekpy53r2pjxwyjkl9aw0k3t5la1b8d5r1ex9bgeqmy93eata0eq0",
         "fffffffffffffffffffffffffffffffffffffffffffffffffffff",
     ),
 ];
 
 #[test]
-fn default_params_hex() {
-    let harsh = Harsh::default();
+fn custom_params_hex() {
+    let harsh = Harsh::builder()
+        .salt("this is my salt")
+        .length(30)
+        .alphabet("xzal86grmb4jhysfoqp3we7291kuct5iv0nd")
+        .build()
+        .unwrap();
 
     for &(hash, value) in &TEST_CASES {
         assert_eq!(

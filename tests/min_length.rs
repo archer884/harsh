@@ -1,4 +1,4 @@
-use crate::harsh::HarshBuilder;
+use harsh::Harsh;
 
 const NUMBERS: &'static [u64] = &[1, 2, 3];
 
@@ -28,9 +28,8 @@ fn min_length_1000() {
 }
 
 fn test_minimum_length(n: usize) {
-    let harsh = HarshBuilder::new().length(n).init().unwrap();
-
-    let hash = harsh.encode(NUMBERS).expect("failed to encode values");
+    let harsh = Harsh::builder().length(n).build().unwrap();
+    let hash = harsh.encode(NUMBERS);
     let values = harsh.decode(&hash).expect("failed to decode hash");
 
     assert_eq!(
@@ -39,5 +38,6 @@ fn test_minimum_length(n: usize) {
         "encoding/decoding failed at length {}",
         n
     );
+
     assert!(hash.len() >= n, "length too short for {}", n);
 }

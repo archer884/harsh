@@ -1,6 +1,6 @@
 [package]
 name = "harsh"
-version = "0.1.7"
+version = "0.2.0"
 edition = "2018"
 description = "Hashids implementation for Rust"
 readme = "README.md"
@@ -12,3 +12,11 @@ keywords = ["hashids"]
 categories = ["encoding", "value-formatting", "web-programming"]
 
 [dependencies]
+
+[dev-dependencies]
+criterion = "0.3"
+quickcheck = "0.9"
+
+[[bench]]
+name = "benchmarks"
+harness = false
