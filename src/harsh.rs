@@ -55,7 +55,7 @@ impl Harsh {
             buffer.push_str(&last);
 
             if idx + 1 < values.len() {
-                value %= (last.bytes().nth(0).unwrap_or(0) as usize + idx) as u64;
+                value %= (last.bytes().next().unwrap_or(0) as usize + idx) as u64;
                 buffer
                     .push(self.separators[(value % self.separators.len() as u64) as usize] as char);
             }
@@ -63,7 +63,7 @@ impl Harsh {
 
         if buffer.len() < self.hash_length {
             let guard_index = (nhash as usize
-                + buffer.bytes().nth(0).expect("hellfire and damnation") as usize)
+                + buffer.bytes().next().expect("hellfire and damnation") as usize)
                 % self.guards.len();
             let guard = self.guards[guard_index];
             buffer.insert(0, guard as char);
