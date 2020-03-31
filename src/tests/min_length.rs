@@ -28,7 +28,7 @@ fn min_length_1000() {
 }
 
 fn test_minimum_length(n: usize) {
-    let harsh = Harsh::new().length(n).build().unwrap();
+    let harsh = Harsh::create().length(n).build().unwrap();
     let hash = harsh.encode(NUMBERS);
     let values = harsh.decode(&hash).expect("failed to decode hash");
 

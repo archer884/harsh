@@ -33,8 +33,8 @@ impl fmt::Display for HarshError {
             HarshError::Decode(e) => match e {
                 DecodeError::Value => f.write_str("Found bad value"),
                 DecodeError::Hash => f.write_str("Malformed hashid"),
-            }
-        }   
+            },
+        }
     }
 }
 
@@ -62,8 +62,15 @@ pub struct Harsh {
 }
 
 impl Harsh {
-    /// Build and initialize a new instance of Harsh.
-    pub fn new() -> HarshBuilder {
+    /// Create a default instance of Harsh.
+    pub fn new() -> Self {
+        HarshBuilder::new()
+            .build()
+            .expect("Default options should not fail")
+    }
+    
+    /// Build a new instance of Harsh.
+    pub fn create() -> HarshBuilder {
         HarshBuilder::new()
     }
 
@@ -82,7 +89,7 @@ impl Harsh {
             separators,
         }
     }
-    
+
     /// Encodes a slice of `u64` values into a single hashid.
     pub fn encode(&self, values: &[u64]) -> String {
         if values.is_empty() {
@@ -197,10 +204,12 @@ impl Harsh {
 
         match result {
             None => Err(HarshError::Decode(DecodeError::Value)),
-            Some(result) => if self.encode(&result) == input.as_ref() {
-                Ok(result)
-            } else {
-                Err(HarshError::Decode(DecodeError::Hash))
+            Some(result) => {
+                if self.encode(&result) == input.as_ref() {
+                    Ok(result)
+                } else {
+                    Err(HarshError::Decode(DecodeError::Hash))
+                }
             }
         }
     }
@@ -243,8 +252,8 @@ impl Harsh {
 }
 
 impl Default for Harsh {
-    fn default() -> Harsh {
-        HarshBuilder::new().build().expect("Default options should not fail")
+    fn default() -> Self {
+        Harsh::new()
     }
 }
 
@@ -299,10 +308,7 @@ mod tests {
             harsh.encode(&[1226198605112]),
             "error encoding [1226198605112]"
         );
-        assert_eq!(
-            "laHquq",
-            harsh.encode(&[1, 2, 3])
-        );
+        assert_eq!("laHquq", harsh.encode(&[1, 2, 3]));
     }
 
     #[test]
@@ -313,10 +319,7 @@ mod tests {
             .build()
             .expect("failed to initialize harsh");
 
-        assert_eq!(
-            "GlaHquq0",
-            harsh.encode(&[1, 2, 3])
-        );
+        assert_eq!("GlaHquq0", harsh.encode(&[1, 2, 3]));
     }
 
     #[test]
@@ -327,10 +330,7 @@ mod tests {
             .build()
             .expect("failed to initialize harsh");
 
-        assert_eq!(
-            "9LGlaHquq06D",
-            harsh.encode(&[1, 2, 3])
-        );
+        assert_eq!("9LGlaHquq06D", harsh.encode(&[1, 2, 3]));
     }
 
     #[test]

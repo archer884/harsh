@@ -1,10 +1,8 @@
 use harsh::Harsh;
-use std::error::Error;
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let harsh = Harsh::new().build()?;
+fn main() {
+    let harsh = Harsh::default();
     println!("{:?}", harsh.encode(&read_values()));
-    Ok(())
 }
 
 fn read_values() -> Vec<u64> {

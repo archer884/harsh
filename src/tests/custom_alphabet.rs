@@ -48,7 +48,7 @@ fn weird_alphabet() {
 }
 
 fn test_alphabet(alphabet: &str, message: &str) {
-    let harsh = Harsh::new().alphabet(alphabet).build().unwrap();
+    let harsh = Harsh::create().alphabet(alphabet).build().unwrap();
     let encoded = harsh.encode(&NUMBERS);
     let decoded = harsh.decode(encoded).unwrap();
 

@@ -36,7 +36,7 @@ const TEST_CASES: [(&'static str, &'static [u64]); 14] = [
 
 #[test]
 fn custom_params() {
-    let harsh = Harsh::new()
+    let harsh = Harsh::create()
         .salt("this is my salt")
         .length(30)
         .alphabet("xzal86grmb4jhysfoqp3we7291kuct5iv0nd")

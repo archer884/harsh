@@ -23,13 +23,16 @@ impl fmt::Display for BuildHarshError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         static ALPHABET_LENGTH_MESSAGE: &str =
             "The provided alphabet does not contain enough unique characters";
-        static ILLEGAL_CHARACTER_MESSAGE: &str = "The provided alphabet contains an illegal character";
+        static ILLEGAL_CHARACTER_MESSAGE: &str =
+            "The provided alphabet contains an illegal character";
         static SEPARATOR_MESSAGE: &str =
             "The provided separators contain a character not found in the alphabet";
-        
+
         match self {
             BuildHarshError::AlphabetLength => write!(f, "{}", ALPHABET_LENGTH_MESSAGE),
-            BuildHarshError::IllegalCharacter(c) => write!(f, "{} ({})", ILLEGAL_CHARACTER_MESSAGE, c),
+            BuildHarshError::IllegalCharacter(c) => {
+                write!(f, "{} ({})", ILLEGAL_CHARACTER_MESSAGE, c)
+            }
             BuildHarshError::Separator => write!(f, "{}", SEPARATOR_MESSAGE),
         }
     }
@@ -158,7 +161,7 @@ fn alphabet_and_separators(
     salt: &[u8],
 ) -> (Vec<u8>, Vec<u8>) {
     const SEPARATOR_DIV: f64 = 3.5;
-    
+
     let separators = match *separators {
         None => DEFAULT_SEPARATORS,
         Some(ref separators) => separators,
@@ -233,7 +236,7 @@ mod tests {
             separators.iter().map(|&u| u as char).collect::<String>()
         );
     }
-    
+
     #[test]
     fn alphabet_and_separator_generation_with_few_separators() {
         use super::DEFAULT_ALPHABET;

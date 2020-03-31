@@ -32,5 +32,5 @@ fn weird_salt() {
 }
 
 fn test_salt(salt: &str, message: &str) {
-    assert!(Harsh::new().salt(salt).build().is_ok(), "{}", message);
+    assert!(Harsh::create().salt(salt).build().is_ok(), "{}", message);
 }
