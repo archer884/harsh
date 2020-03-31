@@ -1,4 +1,4 @@
-use crate::harsh::HarshBuilder;
+use crate::harsh::Harsh;
 
 const TEST_CASES: [(&'static str, &'static str); 8] = [
     ("0dbq3jwa8p4b3gk6gb8bv21goerm96", "deadbeef"),
@@ -25,11 +25,11 @@ const TEST_CASES: [(&'static str, &'static str); 8] = [
 
 #[test]
 fn custom_params_hex() {
-    let harsh = HarshBuilder::new()
+    let harsh = Harsh::new()
         .salt("this is my salt")
         .length(30)
         .alphabet("xzal86grmb4jhysfoqp3we7291kuct5iv0nd")
-        .init()
+        .build()
         .unwrap();
 
     for &(hash, value) in &TEST_CASES {

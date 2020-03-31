@@ -1,9 +1,9 @@
-use crate::harsh::{Harsh, HarshBuilder};
+use crate::harsh::Harsh;
 
 #[test]
 fn small_alphabet() {
     assert!(
-        !HarshBuilder::new().alphabet("1234567890").init().is_ok(),
+        !Harsh::new().alphabet("1234567890").build().is_ok(),
         "should throw an error with a small alphabet"
     );
 }
@@ -11,55 +11,43 @@ fn small_alphabet() {
 #[test]
 fn spaces_in_alphabet() {
     assert!(
-        !HarshBuilder::new()
+        !Harsh::new()
             .alphabet("a cdefghijklmnopqrstuvwxyz")
-            .init()
+            .build()
             .is_ok(),
         "should throw an error when alphabet includes spaces"
     );
 }
 
 #[test]
-fn should_return_none_for_encoding_nothing() {
+fn should_fail_for_encoding_nothing() {
     assert_eq!(
-        None,
-        Harsh::default().encode(&[]),
+        "",
+        &Harsh::default().encode(&[]),
         "should return None when encoding an empty array"
     );
 }
 
 #[test]
-fn should_return_none_for_decoding_nothing() {
-    assert_eq!(
-        None,
-        Harsh::default().decode(""),
-        "should return None when decoding nothing"
-    );
+#[should_panic]
+fn should_fail_for_decoding_nothing() {
+    Harsh::default().decode("").unwrap();
 }
 
 #[test]
-fn should_return_none_for_decoding_invalid_id() {
-    assert_eq!(
-        None,
-        Harsh::default().decode("f"),
-        "should return None when decoding an invalid id"
-    );
+#[should_panic]
+fn should_fail_for_decoding_invalid_id() {
+    Harsh::default().decode("f").unwrap();
 }
 
 #[test]
-fn should_return_none_when_encoding_non_hex_input() {
-    assert_eq!(
-        None,
-        Harsh::default().encode_hex("z"),
-        "should return None when hex-encoding non-hex input"
-    );
+#[should_panic]
+fn should_fail_when_encoding_non_hex_input() {
+    Harsh::default().encode_hex("z").unwrap();
 }
 
 #[test]
-fn should_return_none_when_hex_decoding_invalid_id() {
-    assert_eq!(
-        None,
-        Harsh::default().decode_hex("f"),
-        "should return None when hex-decoding an invalid id"
-    );
+#[should_panic]
+fn should_fail_when_hex_decoding_invalid_id() {
+    Harsh::default().decode_hex("f").unwrap();
 }

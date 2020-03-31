@@ -64,10 +64,28 @@
 #[cfg(test)]
 mod tests;
 
-mod error;
+mod builder;
 mod harsh;
 
-pub use crate::{
-    error::{Error, Result},
-    harsh::{Harsh, HarshBuilder},
-};
+pub use harsh::Harsh;
+
+fn shuffle(values: &mut [u8], salt: &[u8]) {
+    if salt.is_empty() {
+        return;
+    }
+
+    let values_length = values.len();
+    let salt_length = salt.len();
+    let (mut v, mut p) = (0, 0);
+
+    for i in (1..values_length).map(|i| values_length - i) {
+        v %= salt_length;
+
+        let n = salt[v] as usize;
+        p += n;
+        let j = (n + v + p) % i;
+
+        values.swap(i, j);
+        v += 1;
+    }
+}

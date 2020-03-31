@@ -1,11 +1,51 @@
-use crate::error::{Error, Result};
-use std::str;
+use crate::{builder::HarshBuilder, shuffle};
+use std::{error, fmt, result, str};
 
-const DEFAULT_ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-const DEFAULT_SEPARATORS: &[u8] = b"cfhistuCFHISTU";
-const SEPARATOR_DIV: f64 = 3.5;
-const GUARD_DIV: f64 = 12.0;
-const MINIMUM_ALPHABET_LENGTH: usize = 16;
+type Result<T, E = HarshError> = result::Result<T, E>;
+
+#[derive(Clone, Debug)]
+pub enum HarshError {
+    Hex,
+    Decode(DecodeError),
+}
+
+#[derive(Clone, Debug)]
+pub enum DecodeError {
+    Value,
+    Hash,
+}
+
+impl fmt::Display for DecodeError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            DecodeError::Value => f.write_str("Found bad value"),
+            DecodeError::Hash => f.write_str("Malformed hashid"),
+        }
+    }
+}
+
+impl error::Error for DecodeError {}
+
+impl fmt::Display for HarshError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            HarshError::Hex => f.write_str("Failed to decode hex value"),
+            HarshError::Decode(e) => match e {
+                DecodeError::Value => f.write_str("Found bad value"),
+                DecodeError::Hash => f.write_str("Malformed hashid"),
+            }
+        }   
+    }
+}
+
+impl error::Error for HarshError {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        match self {
+            HarshError::Hex => None,
+            HarshError::Decode(ref e) => Some(e),
+        }
+    }
+}
 
 /// A hashids-compatible hasher.
 ///
@@ -14,18 +54,39 @@ const MINIMUM_ALPHABET_LENGTH: usize = 16;
 /// not intended to be cryptographically-secure, so go nuts!
 #[derive(Clone, Debug)]
 pub struct Harsh {
-    salt: Box<[u8]>,
     alphabet: Box<[u8]>,
-    separators: Box<[u8]>,
-    hash_length: usize,
     guards: Box<[u8]>,
+    hash_length: usize,
+    salt: Box<[u8]>,
+    separators: Box<[u8]>,
 }
 
 impl Harsh {
+    /// Build and initialize a new instance of Harsh.
+    pub fn new() -> HarshBuilder {
+        HarshBuilder::new()
+    }
+
+    pub(crate) fn initialize(
+        alphabet: Box<[u8]>,
+        guards: Box<[u8]>,
+        hash_length: usize,
+        salt: Box<[u8]>,
+        separators: Box<[u8]>,
+    ) -> Self {
+        Harsh {
+            alphabet,
+            guards,
+            hash_length,
+            salt,
+            separators,
+        }
+    }
+    
     /// Encodes a slice of `u64` values into a single hashid.
-    pub fn encode(&self, values: &[u64]) -> Option<String> {
+    pub fn encode(&self, values: &[u64]) -> String {
         if values.is_empty() {
-            return None;
+            return String::new();
         }
 
         let nhash = create_nhash(values);
@@ -95,11 +156,11 @@ impl Harsh {
             }
         }
 
-        Some(buffer)
+        buffer
     }
 
     /// Decodes a single hashid into a slice of `u64` values.
-    pub fn decode<T: AsRef<str>>(&self, input: T) -> Option<Vec<u64>> {
+    pub fn decode<T: AsRef<str>>(&self, input: T) -> Result<Vec<u64>> {
         let mut value = input.as_ref().as_bytes();
 
         if let Some(guard_idx) = value.iter().position(|u| self.guards.contains(u)) {
@@ -111,7 +172,7 @@ impl Harsh {
         }
 
         if value.len() < 2 {
-            return None;
+            return Err(HarshError::Decode(DecodeError::Hash));
         }
 
         let mut alphabet = self.alphabet.clone();
@@ -134,15 +195,18 @@ impl Harsh {
             })
             .collect();
 
-        result.filter(|result| {
-            self.encode(result)
-                .map(|re_encoded| re_encoded == input.as_ref())
-                .unwrap_or_default()
-        })
+        match result {
+            None => Err(HarshError::Decode(DecodeError::Value)),
+            Some(result) => if self.encode(&result) == input.as_ref() {
+                Ok(result)
+            } else {
+                Err(HarshError::Decode(DecodeError::Hash))
+            }
+        }
     }
 
     /// Encodes a hex string into a hashid.
-    pub fn encode_hex(&self, hex: &str) -> Option<String> {
+    pub fn encode_hex(&self, hex: &str) -> Result<String> {
         let values: Option<Vec<_>> = hex
             .as_bytes()
             .chunks(12)
@@ -153,113 +217,34 @@ impl Harsh {
             })
             .collect();
 
-        values.and_then(|values| self.encode(&values))
+        match values {
+            Some(values) => Ok(self.encode(&values)),
+            None => Err(HarshError::Hex),
+        }
     }
 
     /// Decodes a hashid into a hex string.
-    pub fn decode_hex(&self, value: &str) -> Option<String> {
+    pub fn decode_hex(&self, value: &str) -> Result<String> {
         use std::fmt::Write;
 
-        match self.decode(value) {
-            None => None,
-            Some(ref values) => {
-                let mut result = String::new();
-                let mut buffer = String::new();
+        let values = self.decode(value)?;
 
-                for n in values {
-                    write!(buffer, "{:x}", n).expect("failed to write?!");
-                    result.push_str(&buffer[1..]);
-                    buffer.clear();
-                }
+        let mut result = String::new();
+        let mut buffer = String::new();
 
-                Some(result)
-            }
+        for n in values {
+            write!(buffer, "{:x}", n).unwrap();
+            result.push_str(&buffer[1..]);
+            buffer.clear();
         }
+
+        Ok(result)
     }
 }
 
 impl Default for Harsh {
     fn default() -> Harsh {
-        HarshBuilder::new().init().unwrap()
-    }
-}
-
-/// A builder used to configure and create a Harsh instance.
-#[derive(Debug, Default)]
-pub struct HarshBuilder {
-    salt: Option<Vec<u8>>,
-    alphabet: Option<Vec<u8>>,
-    separators: Option<Vec<u8>>,
-    hash_length: usize,
-}
-
-impl HarshBuilder {
-    /// Creates a new `HarshBuilder` instance.
-    pub fn new() -> HarshBuilder {
-        HarshBuilder {
-            salt: None,
-            alphabet: None,
-            separators: None,
-            hash_length: 0,
-        }
-    }
-
-    /// Provides a salt.
-    ///
-    /// Note that this salt will be converted into a `[u8]` before use, meaning
-    /// that multi-byte utf8 character values should be avoided.
-    pub fn salt<T: Into<Vec<u8>>>(mut self, salt: T) -> HarshBuilder {
-        self.salt = Some(salt.into());
-        self
-    }
-
-    /// Provides an alphabet.
-    ///
-    /// Note that this alphabet will be converted into a `[u8]` before use, meaning
-    /// that multi-byte utf8 character values should be avoided.
-    pub fn alphabet<T: Into<Vec<u8>>>(mut self, alphabet: T) -> HarshBuilder {
-        self.alphabet = Some(alphabet.into());
-        self
-    }
-
-    /// Provides a set of separators.
-    ///
-    /// Note that these separators will be converted into a `[u8]` before use,
-    /// meaning that multi-byte utf8 character values should be avoided.
-    pub fn separators<T: Into<Vec<u8>>>(mut self, separators: T) -> HarshBuilder {
-        self.separators = Some(separators.into());
-        self
-    }
-
-    /// Provides a minimum hash length.
-    ///
-    /// Keep in mind that hashes produced may be longer than this length.
-    pub fn length(mut self, hash_length: usize) -> HarshBuilder {
-        self.hash_length = hash_length;
-        self
-    }
-
-    /// Initializes a new `Harsh` based on the `HarshBuilder`.
-    ///
-    /// This method will consume the `HarshBuilder`.
-    pub fn init(self) -> Result<Harsh> {
-        let alphabet = unique_alphabet(&self.alphabet)?;
-        if alphabet.len() < MINIMUM_ALPHABET_LENGTH {
-            return Err(Error::AlphabetLength);
-        }
-
-        let salt = self.salt.unwrap_or_else(Vec::new);
-        let (mut alphabet, mut separators) =
-            alphabet_and_separators(&self.separators, &alphabet, &salt);
-        let guards = guards(&mut alphabet, &mut separators);
-
-        Ok(Harsh {
-            salt: salt.into_boxed_slice(),
-            alphabet: alphabet.into_boxed_slice(),
-            separators: separators.into_boxed_slice(),
-            hash_length: self.hash_length,
-            guards: guards.into_boxed_slice(),
-        })
+        HarshBuilder::new().build().expect("Default options should not fail")
     }
 }
 
@@ -269,116 +254,6 @@ fn create_nhash(values: &[u64]) -> u64 {
         .iter()
         .enumerate()
         .fold(0, |a, (idx, value)| a + (value % (idx + 100) as u64))
-}
-
-fn unique_alphabet(alphabet: &Option<Vec<u8>>) -> Result<Vec<u8>> {
-    use std::collections::HashSet;
-
-    match *alphabet {
-        None => {
-            let mut vec = vec![0; DEFAULT_ALPHABET.len()];
-            vec.clone_from_slice(DEFAULT_ALPHABET);
-            Ok(vec)
-        }
-
-        Some(ref alphabet) => {
-            let mut reg = HashSet::new();
-            let mut ret = Vec::new();
-
-            for &item in alphabet {
-                if item == b' ' {
-                    return Err(Error::IllegalCharacter(item as char));
-                }
-
-                if !reg.contains(&item) {
-                    ret.push(item);
-                    reg.insert(item);
-                }
-            }
-
-            if ret.len() < 16 {
-                Err(Error::AlphabetLength)
-            } else {
-                Ok(ret)
-            }
-        }
-    }
-}
-
-fn alphabet_and_separators(
-    separators: &Option<Vec<u8>>,
-    alphabet: &[u8],
-    salt: &[u8],
-) -> (Vec<u8>, Vec<u8>) {
-    let separators = match *separators {
-        None => DEFAULT_SEPARATORS,
-        Some(ref separators) => separators,
-    };
-
-    let mut separators: Vec<_> = separators
-        .iter()
-        .cloned()
-        .filter(|item| alphabet.contains(item))
-        .collect();
-    let mut alphabet: Vec<_> = alphabet
-        .iter()
-        .cloned()
-        .filter(|item| !separators.contains(item))
-        .collect();
-
-    shuffle(&mut separators, salt);
-
-    if separators.is_empty() || (alphabet.len() as f64 / separators.len() as f64) > SEPARATOR_DIV {
-        let length = match (alphabet.len() as f64 / SEPARATOR_DIV).ceil() as usize {
-            1 => 2,
-            n => n,
-        };
-
-        if length > separators.len() {
-            let diff = length - separators.len();
-            separators.extend_from_slice(&alphabet[..diff]);
-            alphabet = alphabet[diff..].to_vec();
-        } else {
-            separators = separators[..length].to_vec();
-        }
-    }
-
-    shuffle(&mut alphabet, salt);
-    (alphabet, separators)
-}
-
-fn guards(alphabet: &mut Vec<u8>, separators: &mut Vec<u8>) -> Vec<u8> {
-    let guard_count = (alphabet.len() as f64 / GUARD_DIV).ceil() as usize;
-    if alphabet.len() < 3 {
-        let guards = separators[..guard_count].to_vec();
-        separators.drain(..guard_count);
-        guards
-    } else {
-        let guards = alphabet[..guard_count].to_vec();
-        alphabet.drain(..guard_count);
-        guards
-    }
-}
-
-fn shuffle(values: &mut [u8], salt: &[u8]) {
-    if salt.is_empty() {
-        return;
-    }
-
-    let values_length = values.len();
-    let salt_length = salt.len();
-    let (mut v, mut p) = (0, 0);
-
-    for i in (1..values_length).map(|i| values_length - i) {
-        v %= salt_length;
-
-        let n = salt[v] as usize;
-        p += n;
-        let j = (n + v + p) % i;
-
-        values.swap(i, j);
-        v += 1;
-    }
 }
 
 fn hash(mut value: u64, alphabet: &[u8]) -> String {
@@ -416,17 +291,17 @@ mod tests {
     fn can_encode() {
         let harsh = HarshBuilder::new()
             .salt("this is my salt")
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
             "4o6Z7KqxE",
-            harsh.encode(&[1226198605112]).expect("failed to encode"),
+            harsh.encode(&[1226198605112]),
             "error encoding [1226198605112]"
         );
         assert_eq!(
             "laHquq",
-            harsh.encode(&[1, 2, 3]).expect("failed to encode")
+            harsh.encode(&[1, 2, 3])
         );
     }
 
@@ -435,12 +310,12 @@ mod tests {
         let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(8)
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
             "GlaHquq0",
-            harsh.encode(&[1, 2, 3]).expect("failed to encode")
+            harsh.encode(&[1, 2, 3])
         );
     }
 
@@ -449,12 +324,12 @@ mod tests {
         let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(12)
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
             "9LGlaHquq06D",
-            harsh.encode(&[1, 2, 3]).expect("failed to encode")
+            harsh.encode(&[1, 2, 3])
         );
     }
 
@@ -462,7 +337,7 @@ mod tests {
     fn can_decode() {
         let harsh = HarshBuilder::new()
             .salt("this is my salt")
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
@@ -481,7 +356,7 @@ mod tests {
         let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(8)
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
@@ -495,7 +370,7 @@ mod tests {
         let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(12)
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
@@ -508,56 +383,56 @@ mod tests {
     fn can_encode_hex() {
         let harsh = HarshBuilder::new()
             .salt("this is my salt")
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
             "lzY",
-            &harsh.encode_hex("FA").expect("failed to encode"),
+            &harsh.encode_hex("FA").expect("Failed to encode"),
             "error encoding `FA`"
         );
         assert_eq!(
             "MemE",
-            &harsh.encode_hex("26dd").expect("failed to encode"),
+            &harsh.encode_hex("26dd").expect("Failed to encode"),
             "error encoding `26dd`"
         );
         assert_eq!(
             "eBMrb",
-            &harsh.encode_hex("FF1A").expect("failed to encode"),
+            &harsh.encode_hex("FF1A").expect("Failed to encode"),
             "error encoding `FF1A`"
         );
         assert_eq!(
             "D9NPE",
-            &harsh.encode_hex("12abC").expect("failed to encode"),
+            &harsh.encode_hex("12abC").expect("Failed to encode"),
             "error encoding `12abC`"
         );
         assert_eq!(
             "9OyNW",
-            &harsh.encode_hex("185b0").expect("failed to encode"),
+            &harsh.encode_hex("185b0").expect("Failed to encode"),
             "error encoding `185b0`"
         );
         assert_eq!(
             "MRWNE",
-            &harsh.encode_hex("17b8d").expect("failed to encode"),
+            &harsh.encode_hex("17b8d").expect("Failed to encode"),
             "error encoding `17b8d`"
         );
         assert_eq!(
             "4o6Z7KqxE",
-            &harsh.encode_hex("1d7f21dd38").expect("failed to encode"),
+            &harsh.encode_hex("1d7f21dd38").expect("Failed to encode"),
             "error encoding `1d7f21dd38`"
         );
         assert_eq!(
             "ooweQVNB",
-            &harsh.encode_hex("20015111d").expect("failed to encode"),
+            &harsh.encode_hex("20015111d").expect("Failed to encode"),
             "error encoding `20015111d`"
         );
         assert_eq!(
             "kRNrpKlJ",
-            &harsh.encode_hex("deadbeef").expect("failed to encode"),
+            &harsh.encode_hex("deadbeef").expect("Failed to encode"),
             "error encoding `deadbeef`"
         );
 
-        let harsh = HarshBuilder::new().init().unwrap();
+        let harsh = HarshBuilder::new().build().unwrap();
         assert_eq!(
             "y42LW46J9luq3Xq9XMly",
             &harsh
@@ -572,12 +447,12 @@ mod tests {
         let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(10)
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
             "GkRNrpKlJd",
-            &harsh.encode_hex("deadbeef").expect("failed to encode")
+            &harsh.encode_hex("deadbeef").expect("Failed to encode"),
         );
     }
 
@@ -586,12 +461,12 @@ mod tests {
         let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(12)
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
             "RGkRNrpKlJde",
-            &harsh.encode_hex("deadbeef").expect("failed to encode")
+            &harsh.encode_hex("deadbeef").expect("Failed to encode"),
         );
     }
 
@@ -599,7 +474,7 @@ mod tests {
     fn can_decode_hex() {
         let harsh = HarshBuilder::new()
             .salt("this is my salt")
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
@@ -648,7 +523,7 @@ mod tests {
             "error decoding `deadbeef`"
         );
 
-        let harsh = HarshBuilder::new().init().unwrap();
+        let harsh = HarshBuilder::new().build().unwrap();
         assert_eq!(
             "507f1f77bcf86cd799439011",
             harsh
@@ -663,7 +538,7 @@ mod tests {
         let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(10)
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
@@ -678,7 +553,7 @@ mod tests {
         let harsh = HarshBuilder::new()
             .salt("this is my salt")
             .length(12)
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
@@ -692,27 +567,28 @@ mod tests {
     fn can_encode_with_custom_alphabet() {
         let harsh = HarshBuilder::new()
             .alphabet("abcdefghijklmnopqrstuvwxyz")
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
             "mdfphx",
-            harsh.encode(&[1, 2, 3]).expect("failed to encode"),
+            harsh.encode(&[1, 2, 3]),
             "failed to encode [1, 2, 3]"
         );
     }
 
     #[test]
+    #[should_panic]
     fn can_decode_with_invalid_alphabet() {
         let harsh = Harsh::default();
-        assert_eq!(None, harsh.decode("this$ain't|a\number"));
+        harsh.decode("this$ain't|a\number").unwrap();
     }
 
     #[test]
     fn can_decode_with_custom_alphabet() {
         let harsh = HarshBuilder::new()
             .alphabet("abcdefghijklmnopqrstuvwxyz")
-            .init()
+            .build()
             .expect("failed to initialize harsh");
 
         assert_eq!(
@@ -736,47 +612,6 @@ mod tests {
     }
 
     #[test]
-    fn alphabet_and_separator_generation() {
-        use super::{DEFAULT_ALPHABET, DEFAULT_SEPARATORS};
-
-        let (alphabet, separators) = super::alphabet_and_separators(
-            &Some(DEFAULT_SEPARATORS.to_vec()),
-            DEFAULT_ALPHABET,
-            b"this is my salt",
-        );
-
-        assert_eq!(
-            "AdG05N6y2rljDQak4xgzn8ZR1oKYLmJpEbVq3OBv9WwXPMe7",
-            alphabet.iter().map(|&u| u as char).collect::<String>()
-        );
-        assert_eq!(
-            "UHuhtcITCsFifS",
-            separators.iter().map(|&u| u as char).collect::<String>()
-        );
-    }
-
-    #[test]
-    fn alphabet_and_separator_generation_with_few_separators() {
-        use super::DEFAULT_ALPHABET;
-
-        let separators = b"fu";
-        let (alphabet, separators) = super::alphabet_and_separators(
-            &Some(separators.to_vec()),
-            DEFAULT_ALPHABET,
-            b"this is my salt",
-        );
-
-        assert_eq!(
-            "4RVQrYM87wKPNSyTBGU1E6FIC9ALtH0ZD2Wxz3vs5OXJ",
-            alphabet.iter().map(|&u| u as char).collect::<String>()
-        );
-        assert_eq!(
-            "ufabcdeghijklmnopq",
-            separators.iter().map(|&u| u as char).collect::<String>()
-        );
-    }
-
-    #[test]
     fn shuffle() {
         let salt = b"1234";
         let mut values = "asdfzxcvqwer".bytes().collect::<Vec<_>>();
@@ -787,21 +622,18 @@ mod tests {
 
     #[test]
     fn guard_characters_should_be_added_to_left_first() {
-        let harsh = HarshBuilder::new().length(3).init().unwrap();
-        let hashed_value = harsh.encode(&[1]).unwrap();
+        let harsh = HarshBuilder::new().length(3).build().unwrap();
+        let hashed_value = harsh.encode(&[1]);
 
         assert_eq!(&hashed_value, "ejR");
-        assert_eq!(
-            Some(vec![1]),
-            harsh.decode("ejR"),
-            "should return None when decoding a valid id with a garbage ending",
-        );
+        assert_eq!(vec![1], harsh.decode("ejR").unwrap());
     }
 
     #[test]
+    #[should_panic]
     fn appended_garbage_data_invalidates_hashid() {
-        let harsh = HarshBuilder::new().length(4).init().unwrap();
-        let id = harsh.encode(&[1, 2]).unwrap() + "12";
-        assert_eq!(None, harsh.decode(id));
+        let harsh = HarshBuilder::new().length(4).build().unwrap();
+        let id = harsh.encode(&[1, 2]) + "12";
+        harsh.decode(id).unwrap();
     }
 }

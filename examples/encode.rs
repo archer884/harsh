@@ -1,7 +1,8 @@
-use harsh::{HarshBuilder, Result};
+use harsh::Harsh;
+use std::error::Error;
 
-fn main() -> Result<()> {
-    let harsh = HarshBuilder::new().init()?;
+fn main() -> Result<(), Box<dyn Error>> {
+    let harsh = Harsh::new().build()?;
     println!("{:?}", harsh.encode(&read_values()));
     Ok(())
 }

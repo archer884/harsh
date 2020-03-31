@@ -1,4 +1,4 @@
-use crate::harsh::HarshBuilder;
+use crate::harsh::Harsh;
 
 #[test]
 fn empty_salt() {
@@ -32,5 +32,5 @@ fn weird_salt() {
 }
 
 fn test_salt(salt: &str, message: &str) {
-    assert!(HarshBuilder::new().salt(salt).init().is_ok(), "{}", message);
+    assert!(Harsh::new().salt(salt).build().is_ok(), "{}", message);
 }
