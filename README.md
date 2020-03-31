@@ -1,9 +1,6 @@
 
 [![hashids](http://hashids.org/public/img/hashids.gif "Hashids")](http://hashids.org/)
 
-[![Travis CI build Status][travis-image]][travis-url]
-[![AppVeyor build Status][appveyor-image]][appveyor-url]
-
 **Harsh** is a Rust implementation of the **Hashids** JavaScript library to generate YouTube-like ids from numbers. Use it when you don't want to expose your database ids to the user: [http://hashids.org/javascript](http://hashids.org/javascript)
 
 Quick example
