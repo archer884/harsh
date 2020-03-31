@@ -12,3 +12,10 @@ keywords = ["hashids"]
 categories = ["encoding", "value-formatting", "web-programming"]
 
 [dependencies]
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "benchmarks"
+harness = false
