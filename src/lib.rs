@@ -35,7 +35,7 @@
 //! # fn main() -> Result<(), Box<dyn Error>> {
 //! let harsh = Harsh::builder().salt("salt goes here!").build()?;
 //! let encoded = harsh.encode(&[1, 2, 3, 4, 5]);
-//! 
+//!
 //! assert_eq!("xrUQTnhgu7", encoded);
 //! # Ok(())
 //! # }
