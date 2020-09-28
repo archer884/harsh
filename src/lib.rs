@@ -63,7 +63,8 @@
 mod builder;
 mod harsh;
 
-pub use crate::harsh::Harsh;
+pub use crate::builder::{BuildError, HarshBuilder};
+pub use crate::harsh::{Error, Harsh};
 
 fn shuffle(values: &mut [u8], salt: &[u8]) {
     if salt.is_empty() {

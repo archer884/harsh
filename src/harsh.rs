@@ -1,10 +1,10 @@
 use crate::{builder::HarshBuilder, shuffle};
 use std::{error, fmt, result, str};
 
-type Result<T, E = HarshError> = result::Result<T, E>;
+type Result<T, E = Error> = result::Result<T, E>;
 
 #[derive(Clone, Debug)]
-pub enum HarshError {
+pub enum Error {
     Hex,
     Decode(DecodeError),
 }
@@ -26,11 +26,11 @@ impl fmt::Display for DecodeError {
 
 impl error::Error for DecodeError {}
 
-impl fmt::Display for HarshError {
+impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            HarshError::Hex => f.write_str("Failed to decode hex value"),
-            HarshError::Decode(e) => match e {
+            Error::Hex => f.write_str("Failed to decode hex value"),
+            Error::Decode(e) => match e {
                 DecodeError::Value => f.write_str("Found bad value"),
                 DecodeError::Hash => f.write_str("Malformed hashid"),
             },
@@ -38,11 +38,11 @@ impl fmt::Display for HarshError {
     }
 }
 
-impl error::Error for HarshError {
+impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self {
-            HarshError::Hex => None,
-            HarshError::Decode(ref e) => Some(e),
+            Error::Hex => None,
+            Error::Decode(ref e) => Some(e),
         }
     }
 }
@@ -179,7 +179,7 @@ impl Harsh {
         }
 
         if value.len() < 2 {
-            return Err(HarshError::Decode(DecodeError::Hash));
+            return Err(Error::Decode(DecodeError::Hash));
         }
 
         let mut alphabet = self.alphabet.clone();
@@ -203,12 +203,12 @@ impl Harsh {
             .collect();
 
         match result {
-            None => Err(HarshError::Decode(DecodeError::Value)),
+            None => Err(Error::Decode(DecodeError::Value)),
             Some(result) => {
                 if self.encode(&result) == input.as_ref() {
                     Ok(result)
                 } else {
-                    Err(HarshError::Decode(DecodeError::Hash))
+                    Err(Error::Decode(DecodeError::Hash))
                 }
             }
         }
@@ -228,7 +228,7 @@ impl Harsh {
 
         match values {
             Some(values) => Ok(self.encode(&values)),
-            None => Err(HarshError::Hex),
+            None => Err(Error::Hex),
         }
     }
 

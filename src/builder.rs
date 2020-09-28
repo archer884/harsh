@@ -4,11 +4,11 @@ use std::{error, fmt, result};
 const DEFAULT_ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 const DEFAULT_SEPARATORS: &[u8] = b"cfhistuCFHISTU";
 
-pub type Result<T, E = BuildHarshError> = result::Result<T, E>;
+pub type Result<T, E = BuildError> = result::Result<T, E>;
 
 /// Represents potential errors encountered during `Harsh` initialization.
 #[derive(Clone, Debug)]
-pub enum BuildHarshError {
+pub enum BuildError {
     /// Error returned when the provided alphabet has insufficient distinct elements
     AlphabetLength,
 
@@ -19,7 +19,7 @@ pub enum BuildHarshError {
     Separator,
 }
 
-impl fmt::Display for BuildHarshError {
+impl fmt::Display for BuildError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         static ALPHABET_LENGTH_MESSAGE: &str =
             "The provided alphabet does not contain enough unique characters";
@@ -29,16 +29,16 @@ impl fmt::Display for BuildHarshError {
             "The provided separators contain a character not found in the alphabet";
 
         match self {
-            BuildHarshError::AlphabetLength => write!(f, "{}", ALPHABET_LENGTH_MESSAGE),
-            BuildHarshError::IllegalCharacter(c) => {
+            BuildError::AlphabetLength => write!(f, "{}", ALPHABET_LENGTH_MESSAGE),
+            BuildError::IllegalCharacter(c) => {
                 write!(f, "{} ({})", ILLEGAL_CHARACTER_MESSAGE, c)
             }
-            BuildHarshError::Separator => write!(f, "{}", SEPARATOR_MESSAGE),
+            BuildError::Separator => write!(f, "{}", SEPARATOR_MESSAGE),
         }
     }
 }
 
-impl error::Error for BuildHarshError {}
+impl error::Error for BuildError {}
 
 /// A builder used to configure and create a Harsh instance.
 #[derive(Debug, Default)]
@@ -103,7 +103,7 @@ impl HarshBuilder {
 
         let alphabet = unique_alphabet(&self.alphabet)?;
         if alphabet.len() < MINIMUM_ALPHABET_LENGTH {
-            return Err(BuildHarshError::AlphabetLength);
+            return Err(BuildError::AlphabetLength);
         }
 
         let salt = self.salt.unwrap_or_else(Vec::new);
@@ -137,7 +137,7 @@ fn unique_alphabet(alphabet: &Option<Vec<u8>>) -> Result<Vec<u8>> {
 
             for &item in alphabet {
                 if item == b' ' {
-                    return Err(BuildHarshError::IllegalCharacter(item as char));
+                    return Err(BuildError::IllegalCharacter(item as char));
                 }
 
                 if !reg.contains(&item) {
@@ -147,7 +147,7 @@ fn unique_alphabet(alphabet: &Option<Vec<u8>>) -> Result<Vec<u8>> {
             }
 
             if ret.len() < 16 {
-                Err(BuildHarshError::AlphabetLength)
+                Err(BuildError::AlphabetLength)
             } else {
                 Ok(ret)
             }
