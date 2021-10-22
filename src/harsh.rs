@@ -1,5 +1,6 @@
-use crate::{builder::HarshBuilder, shuffle};
 use std::{error, fmt, result, str};
+
+use crate::{builder::HarshBuilder, shuffle};
 
 type Result<T, E = Error> = result::Result<T, E>;
 

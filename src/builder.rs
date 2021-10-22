@@ -1,5 +1,6 @@
-use crate::{harsh::Harsh, shuffle};
 use std::{error, fmt, result};
+
+use crate::{harsh::Harsh, shuffle};
 
 const DEFAULT_ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 const DEFAULT_SEPARATORS: &[u8] = b"cfhistuCFHISTU";
