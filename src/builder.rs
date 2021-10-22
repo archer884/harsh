@@ -22,11 +22,11 @@ pub enum BuildError {
 impl fmt::Display for BuildError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         static ALPHABET_LENGTH_MESSAGE: &str =
-            "The provided alphabet does not contain enough unique characters";
+            "alphabet must include at least 16 characters";
         static ILLEGAL_CHARACTER_MESSAGE: &str =
-            "The provided alphabet contains an illegal character";
+            "alphabet contains an illegal character";
         static SEPARATOR_MESSAGE: &str =
-            "The provided separators contain a character not found in the alphabet";
+            "separators contain a character not found in the alphabet";
 
         match self {
             BuildError::AlphabetLength => write!(f, "{}", ALPHABET_LENGTH_MESSAGE),
