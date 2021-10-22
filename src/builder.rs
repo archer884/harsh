@@ -72,7 +72,8 @@ impl HarshBuilder {
     /// Provides an alphabet.
     ///
     /// Note that this alphabet will be converted into a `[u8]` before use, meaning
-    /// that multi-byte utf8 character values should be avoided.
+    /// that multi-byte utf8 character values should be avoided. The alphabet must
+    /// include at least sixteen characters.
     pub fn alphabet<T: Into<Vec<u8>>>(mut self, alphabet: T) -> HarshBuilder {
         self.alphabet = Some(alphabet.into());
         self
