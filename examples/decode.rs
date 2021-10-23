@@ -1,5 +1,6 @@
-use harsh::Harsh;
 use std::{env, error::Error};
+
+use harsh::Harsh;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let harsh = Harsh::default();

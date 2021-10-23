@@ -1,5 +1,6 @@
-use crate::{builder::HarshBuilder, shuffle};
 use std::{error, fmt, result, str};
+
+use crate::{builder::HarshBuilder, shuffle};
 
 type Result<T, E = Error> = result::Result<T, E>;
 
@@ -134,7 +135,7 @@ impl Harsh {
 
             if buffer.len() < self.hash_length {
                 let guard_index = (nhash as usize
-                    + buffer.bytes().nth(2).expect("hellfire and damnation") as usize)
+                    + buffer.as_bytes()[2] as usize)
                     % self.guards.len();
                 let guard = self.guards[guard_index];
                 buffer.push(guard as char);
@@ -186,7 +187,7 @@ impl Harsh {
 
         let lottery = value[0];
         let value = &value[1..];
-        let segments: Vec<_> = value.split(|u| self.separators.contains(u)).collect();
+        let segments = value.split(|u| self.separators.contains(u));
 
         let result: Option<Vec<_>> = segments
             .into_iter()

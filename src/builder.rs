@@ -1,5 +1,6 @@
-use crate::{harsh::Harsh, shuffle};
 use std::{error, fmt, result};
+
+use crate::{harsh::Harsh, shuffle};
 
 const DEFAULT_ALPHABET: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 const DEFAULT_SEPARATORS: &[u8] = b"cfhistuCFHISTU";
@@ -22,11 +23,11 @@ pub enum BuildError {
 impl fmt::Display for BuildError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         static ALPHABET_LENGTH_MESSAGE: &str =
-            "The provided alphabet does not contain enough unique characters";
+            "alphabet must include at least 16 characters";
         static ILLEGAL_CHARACTER_MESSAGE: &str =
-            "The provided alphabet contains an illegal character";
+            "alphabet contains an illegal character";
         static SEPARATOR_MESSAGE: &str =
-            "The provided separators contain a character not found in the alphabet";
+            "separators contain a character not found in the alphabet";
 
         match self {
             BuildError::AlphabetLength => write!(f, "{}", ALPHABET_LENGTH_MESSAGE),
@@ -72,7 +73,8 @@ impl HarshBuilder {
     /// Provides an alphabet.
     ///
     /// Note that this alphabet will be converted into a `[u8]` before use, meaning
-    /// that multi-byte utf8 character values should be avoided.
+    /// that multi-byte utf8 character values should be avoided. The alphabet must
+    /// include at least sixteen characters.
     pub fn alphabet<T: Into<Vec<u8>>>(mut self, alphabet: T) -> HarshBuilder {
         self.alphabet = Some(alphabet.into());
         self
