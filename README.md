@@ -18,10 +18,10 @@ Pass a project name to make your ids unique:
 
 ```rust
 let harsh = Harsh::builder().salt("My Project").build().unwrap();
-let id = harsh.encode(&[1, 2, 3]).unwrap(); // "Z4UrtW"
+let id = harsh.encode(&[1, 2, 3]); // "Z4UrtW"
 
 let harsh = Harsh::builder().salt("My Other Project").build().unwrap();
-let id = harsh.encode(&[1, 2, 3]).unwrap(); // "gPUasb"
+let id = harsh.encode(&[1, 2, 3]); // "gPUasb"
 ```
 
 **Use padding to make your ids longer:**
@@ -30,10 +30,10 @@ Note that ids are only padded to fit **at least** a certain length. It doesn't m
 
 ```rust
 let harsh = Harsh::default(); // no padding
-let id = harsh.encode(&[1]).unwrap() // "jR"
+let id = harsh.encode(&[1]); // "jR"
 
 let harsh = Harsh::builder().length(10).build().unwrap(); // pad to length 10
-let id = harsh.encode(&[1]).unwrap() // "VolejRejNm"
+let id = harsh.encode(&[1]); // "VolejRejNm"
 ```
 
 **Pass a custom alphabet:**
@@ -62,7 +62,7 @@ Pitfalls
 	```rust
 	let harsh = Harsh::default();
 
-    let id = harsh.encode(&[1]).unwrap();
+    let id = harsh.encode(&[1]);
     println!("{:?}", harsh.decode(&id).unwrap()); // [1]
 	```
 
